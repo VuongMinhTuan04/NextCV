@@ -3,9 +3,12 @@ import { getAllPostService } from "../services/post.service";
 
 export const getAllPostController = async (req: Request, res: Response) => {
     try {
-        const post = await getAllPostService();
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 5;
 
-        res.status(200).json({ message: "[SUCCESS]: Get All Post Success", data: post });
+        const posts = await getAllPostService(page, limit);
+
+        res.status(200).json({ message: "[GET]: Get All Post Success", data: posts });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
@@ -13,9 +16,9 @@ export const getAllPostController = async (req: Request, res: Response) => {
 
 export const createPostController = async (req: Request, res: Response) => {
     try {
-        const post = await getAllPostService();
+        
 
-        res.status(200).json({ message: "[SUCCESS]: Get All Post Success", data: post });
+        res.status(200).json({ message: "[POST]: Create Post Success" });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
@@ -23,9 +26,9 @@ export const createPostController = async (req: Request, res: Response) => {
 
 export const updatePostController = async (req: Request, res: Response) => {
     try {
-        const post = await getAllPostService();
+        
 
-        res.status(200).json({ message: "[SUCCESS]: Get All Post Success", data: post });
+        res.status(200).json({ message: "[UPDATE]: Update Post Success" });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
@@ -33,9 +36,9 @@ export const updatePostController = async (req: Request, res: Response) => {
 
 export const deletePostController = async (req: Request, res: Response) => {
     try {
-        const post = await getAllPostService();
+        
 
-        res.status(200).json({ message: "[SUCCESS]: Get All Post Success", data: post });
+        res.status(200).json({ message: "[DELETE]: Delete Post Success" });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }

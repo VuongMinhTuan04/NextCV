@@ -9,11 +9,13 @@ const postSchema = new mongoose.Schema(
         },
         title: {
             type: String,
-            required: true
+            required: true,
+            trim: true
         },
         fileUrl: {
             type: String,
-            required: true
+            required: true,
+            trim: true
         },
         likes: [
             {
@@ -31,4 +33,4 @@ const postSchema = new mongoose.Schema(
     }
 );
 
-export default mongoose.model("Post", postSchema);
+export default mongoose.model("Post", postSchema, "Posts");

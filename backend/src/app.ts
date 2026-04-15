@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./configs/db";
 import postRouter from "./routes/post.route";
 import authRouter from "./routes/auth.route";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 connectDB();
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 5000;
 //app
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/post", postRouter);
 app.use("/api/auth", authRouter);

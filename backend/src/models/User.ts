@@ -6,10 +6,12 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             unique: true,
-            trim: true
+            trim: true,
+            lowercase: true
         },
         password: {
             type: String,
+            minLength: 6,
             required: true,
             trim: true
         },
@@ -24,6 +26,7 @@ const userSchema = new mongoose.Schema(
         },
         phone: {
             type: String,
+            maxLength: 11,
             required: true,
             trim: true
         },
@@ -38,4 +41,4 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-export default mongoose.model("User", userSchema);
+export default mongoose.model("User", userSchema, "Users");
