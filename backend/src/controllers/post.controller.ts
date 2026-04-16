@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getAllPostService } from "../services/post.service";
+import { createPostService, getAllPostService, likePostService } from "../services/post.service";
 
 export const getAllPostController = async (req: Request, res: Response) => {
     try {
@@ -16,9 +16,32 @@ export const getAllPostController = async (req: Request, res: Response) => {
 
 export const createPostController = async (req: Request, res: Response) => {
     try {
-        
+        const user = (req as any).user;
+        const file = req.file as Express.Multer.File;
 
-        res.status(200).json({ message: "[POST]: Create Post Success" });
+        const post = await createPostService(req.body, file, user.userId);
+
+        res.status(200).json({ message: "[POST]: Create Post Success", data: post });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+export const likePostController = async (req: Request, res: Response) => {
+    try {
+        const user = (req as any).user;
+        const postId = req.params.id as string;
+
+        const result = await likePostService(
+            postId,
+            user.userId
+        );
+
+        res.status(200).json({
+            message: "[PATCH]: Like Post Success",
+            liked: result.liked,
+            likesCount: result.likesCount
+        });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }

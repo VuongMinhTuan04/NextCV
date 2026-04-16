@@ -34,9 +34,18 @@ export const authorization = async (req: Request, res: Response, next: NextFunct
 
 export const validateInputSignIn = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if(!email) {
         return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (email !== email.toLowerCase()) {
+        return res.status(400).json({ message: "Email must be lowercase" });
+    }
+
+    if (!emailRegex.test(email.trim())) {
+        return res.status(400).json({ message: "Invalid email format" });
     }
 
     if(!password) {

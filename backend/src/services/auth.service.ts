@@ -6,8 +6,9 @@ const SALT_ROUNDS = 10;
 
 export const signInService = async (data: any) => {
     const { email, password } = data;
+    const normalizedEmail = email.trim().toLowerCase();
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if(!user) {
         throw new Error("Sai tài khoản hoặc mật khẩu");
     }
@@ -31,8 +32,9 @@ export const signInService = async (data: any) => {
 
 export const signUpService = async (data: any) => {
     const { email, password, fullname, phone } = data;
-    
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if(existingUser) {
         throw new Error("Tài khoản đã tồn tại!");
     }
@@ -40,7 +42,7 @@ export const signUpService = async (data: any) => {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     const user = await User.create({
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         fullname,
         phone
@@ -50,7 +52,7 @@ export const signUpService = async (data: any) => {
 }
 
 export const signOutService = async () => {
-    
+    return true;
 }
 
 export const forgotPasswordService = async () => {

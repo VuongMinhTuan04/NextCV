@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { signInService, signUpService } from "../services/auth.service";
+import { signInService, signOutService, signUpService } from "../services/auth.service";
 
 export const signInController = async (req: Request, res: Response) => {
     try {
@@ -7,7 +7,7 @@ export const signInController = async (req: Request, res: Response) => {
 
         res.cookie("accessToken", token, {
             httpOnly: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            maxAge: 7 * 24 * 60 * 60 * 1000, //7 Days
             sameSite: "lax",
             secure: false
         });
@@ -33,7 +33,15 @@ export const signUpController = async (req: Request, res: Response) => {
 
 export const signOutController = async (req: Request, res: Response) => {
     try {
-        
+        await signOutService();
+
+        res.clearCookie("accessToken", {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false
+        });
+
+        res.status(200).json({ message: "[GET]: Sign Out Success" });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }

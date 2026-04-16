@@ -17,15 +17,19 @@ const postSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
-        likes: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User"
-            }
-        ],
-        likesCount: {
-            type: Number,
-            default: 0
+        fileType: {
+            type: String,
+            enum: ["image", "pdf", "doc"],
+            required: true
+        },
+        likes: {
+            type: [
+                {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "User"
+                }
+            ],
+            default: []
         }
     },
     {
