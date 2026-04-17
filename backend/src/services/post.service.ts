@@ -1,16 +1,18 @@
+import { IPost } from "../interfaces/post.interface";
 import Post from "../models/Post"
-import { getFileType, uploadFileToCloudinary } from "../utils/file.util";
+import { deleteFileFromCloudinary, getFileType, uploadFileToCloudinary } from "../utils/file.util";
 
 export const getAllPostService = async (page: number, limit: number) => {
     const skip = (page - 1) * limit;
 
     return await Post.find()
+        .populate("userId", "fullname avatar")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 }
 
-export const createPostService = async (data: any, file: Express.Multer.File, userId: string) => {
+export const createPostService = async (data: IPost, file: Express.Multer.File, userId: string) => {
     const { title } = data;
 
     const uploadedFile = await uploadFileToCloudinary(file, "posts");
@@ -19,40 +21,48 @@ export const createPostService = async (data: any, file: Express.Multer.File, us
         userId,
         title,
         fileUrl: uploadedFile.secure_url,
+        filePublicId: uploadedFile.public_id,
+        fileResourceType: uploadedFile.resource_type,
         fileType: getFileType(file.mimetype)
     });
 }
 
-export const likePostService = async (postId: string, userId: string) => {
-    const post = await Post.findById(postId);
-    if(!post) {
-        throw new Error("Không tìm thấy bài đăng");
-    }
-
-    const isLiked = post.likes.some(
-        (id: any) => id.toString() === userId
-    );
+export const likePostService = async (post: any, userId: string) => {
+    const isLiked = post.likes.some((id: any) => id.toString() === userId);
 
     if(isLiked) {
-        post.likes = post.likes.filter(
-            (id: any) => id.toString() !== userId
-        );
-
-        await post.save();
-
-        return {
-            liked: false,
-            likesCount: post.likes.length,
-            post
-        }
+        post.likes = post.likes.filter((id: any) => id.toString() !== userId);
+    } else {
+        post.likes.push(userId as any);
     }
 
-    post.likes.push(userId as any);
     await post.save();
 
     return {
-        liked: true,
+        liked: !isLiked,
         likesCount: post.likes.length,
-        post
     }
+}
+
+export const editPostService = async (post: any) => {
+    return post;
+}
+
+export const updatePostService = async (data: IPost, post: any) => {
+    post.title = data.title;
+
+    await post.save();
+
+    return post;
+}
+
+export const deletePostService = async (post: any) => {
+    await deleteFileFromCloudinary(
+        post.filePublicId,
+        post.fileResourceType
+    );
+
+    await post.deleteOne();
+
+    return true;
 }

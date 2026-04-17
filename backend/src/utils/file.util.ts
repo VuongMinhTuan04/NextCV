@@ -31,19 +31,38 @@ export const uploadFileToCloudinary = (
     file: Express.Multer.File,
     folder = "posts"
 ) => new Promise<any>((resolve, reject) => {
+        const resourceType = file.mimetype.startsWith("image/") ? "image" : "raw";
+
         const stream = cloudinary.uploader.upload_stream(
             {
                 folder,
-                resource_type: "auto"
+                resource_type: resourceType
             },
             (error, result) => {
                 if (error) {
                     return reject(error);
                 }
+
+                if (!result) {
+                    return reject(new Error("Upload failed"));
+                }
                 
-                resolve(result);
+                resolve({
+                    secure_url: result.secure_url,
+                    public_id: result.public_id,
+                    resource_type: result.resource_type
+                });
             }
         );
 
         Readable.from(file.buffer).pipe(stream);
     });
+
+export const deleteFileFromCloudinary = async (
+    publicId: string,
+    resourceType: "image" | "raw"
+) => {
+    return await cloudinary.uploader.destroy(publicId, {
+        resource_type: resourceType
+    });
+};

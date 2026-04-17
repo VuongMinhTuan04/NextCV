@@ -17,6 +17,15 @@ const postSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
+        filePublicId: {
+            type: String,
+            required: true
+        },
+        fileResourceType: {
+            type: String,
+            enum: ["image", "raw"],
+            required: true
+        },
         fileType: {
             type: String,
             enum: ["image", "pdf", "doc"],

@@ -1,5 +1,12 @@
 import { Request, Response } from "express";
-import { signInService, signOutService, signUpService } from "../services/auth.service";
+import {
+    resetForgotPasswordService,
+    sendForgotPasswordCodeService,
+    signInService,
+    signOutService,
+    signUpService,
+    verifyForgotPasswordCodeService
+} from "../services/auth.service";
 
 export const signInController = async (req: Request, res: Response) => {
     try {
@@ -9,7 +16,8 @@ export const signInController = async (req: Request, res: Response) => {
             httpOnly: true,
             maxAge: 7 * 24 * 60 * 60 * 1000, //7 Days
             sameSite: "lax",
-            secure: false
+            secure: process.env.NODE_ENV === "production",
+            path: "/"
         });
 
         const { password, ...infoUser } = user.toObject();
@@ -38,7 +46,8 @@ export const signOutController = async (req: Request, res: Response) => {
         res.clearCookie("accessToken", {
             httpOnly: true,
             sameSite: "lax",
-            secure: false
+            secure: process.env.NODE_ENV === "production",
+            path: "/"
         });
 
         res.status(200).json({ message: "[GET]: Sign Out Success" });
@@ -47,9 +56,31 @@ export const signOutController = async (req: Request, res: Response) => {
     }
 }
 
-export const forgotPasswordController = async (req: Request, res: Response) => {
+export const sendForgotPasswordCodeController = async (req: Request, res: Response) => {
     try {
-        
+        await sendForgotPasswordCodeService(req.body);
+
+        res.status(200).json({ message: "[POST]: Send Reset Code Success" });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+export const verifyForgotPasswordCodeController = async (req: Request, res: Response) => {
+    try {
+        await verifyForgotPasswordCodeService(req.body);
+
+        res.status(200).json({ message: "Verification code is valid" });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+export const resetForgotPasswordController = async (req: Request, res: Response) => {
+    try {
+        await resetForgotPasswordService(req.body);
+
+        res.status(200).json({ message: "[PATCH]: Reset Password Success" });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }

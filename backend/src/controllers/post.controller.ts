@@ -1,5 +1,12 @@
 import { Request, Response } from "express";
-import { createPostService, getAllPostService, likePostService } from "../services/post.service";
+import {
+    createPostService,
+    deletePostService,
+    editPostService,
+    getAllPostService,
+    likePostService,
+    updatePostService
+} from "../services/post.service";
 
 export const getAllPostController = async (req: Request, res: Response) => {
     try {
@@ -21,7 +28,7 @@ export const createPostController = async (req: Request, res: Response) => {
 
         const post = await createPostService(req.body, file, user.userId);
 
-        res.status(200).json({ message: "[POST]: Create Post Success", data: post });
+        res.status(201).json({ message: "[POST]: Create Post Success", data: post });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
@@ -30,12 +37,9 @@ export const createPostController = async (req: Request, res: Response) => {
 export const likePostController = async (req: Request, res: Response) => {
     try {
         const user = (req as any).user;
-        const postId = req.params.id as string;
+        const post = (req as any).post;
 
-        const result = await likePostService(
-            postId,
-            user.userId
-        );
+        const result = await likePostService(post, user.userId);
 
         res.status(200).json({
             message: "[PATCH]: Like Post Success",
@@ -47,11 +51,25 @@ export const likePostController = async (req: Request, res: Response) => {
     }
 }
 
+export const editPostController = async (req: Request, res: Response) => {
+    try {
+        const post = (req as any).post;
+
+        const result = await editPostService(post);
+
+        res.status(200).json({ message: "[GET]: Edit Post Success", data: result });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
 export const updatePostController = async (req: Request, res: Response) => {
     try {
-        
+        const post = (req as any).post;
 
-        res.status(200).json({ message: "[UPDATE]: Update Post Success" });
+        const updatedPost = await updatePostService(req.body, post);
+
+        res.status(200).json({ message: "[PATCH]: Update Post Success", data: updatedPost });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
@@ -59,7 +77,9 @@ export const updatePostController = async (req: Request, res: Response) => {
 
 export const deletePostController = async (req: Request, res: Response) => {
     try {
-        
+        const post = (req as any).post;
+
+        await deletePostService(post);
 
         res.status(200).json({ message: "[DELETE]: Delete Post Success" });
     } catch (error: any) {

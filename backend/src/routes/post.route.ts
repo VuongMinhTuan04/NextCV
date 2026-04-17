@@ -2,35 +2,67 @@ import express from "express";
 import {
     createPostController,
     deletePostController,
+    editPostController,
     getAllPostController,
     likePostController,
     updatePostController
 } from "../controllers/post.controller";
-import { authentication, authorization } from "../middlewares/auth.middleware";
-import { validateInputPost } from "../middlewares/validateInput.middleware";
+import { authentication } from "../middlewares/auth.middleware";
+import {
+    canDeletePost,
+    canEditAndUpdatePost,
+    loadPost,
+    validateInputCreatePost,
+    validateInputUpdatePost
+} from "../middlewares/validatePost.middleware";
 import { upload } from "../middlewares/upload.middleware";
+import { validateObjectId } from "../middlewares/validateMongoId.middleware";
 
 const router = express.Router();
 
 router.get("/", getAllPostController);
+
 router.post(
     "/create",
     authentication,
     upload.single("file"),
-    validateInputPost,
+    validateInputCreatePost,
     createPostController
 );
-router.patch("/like/:id", authentication, likePostController);
+
+router.patch(
+    "/like/:id",
+    authentication,
+    validateObjectId("id"),
+    loadPost,
+    likePostController
+);
+
+router.get(
+    "/edit/:id",
+    authentication,
+    validateObjectId("id"),
+    loadPost,
+    canEditAndUpdatePost,
+    editPostController
+);
+
 router.patch(
     "/update/:id",
     authentication,
-    authorization,
+    validateObjectId("id"),
+    loadPost,
+    canEditAndUpdatePost,
+    validateInputUpdatePost,
     updatePostController
 );
+
 router.delete(
     "/delete/:id",
     authentication,
-    authorization,
+    validateObjectId("id"),
+    loadPost,
+    canDeletePost,
     deletePostController
 );
 

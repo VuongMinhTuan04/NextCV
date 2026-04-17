@@ -1,17 +1,45 @@
 import express from "express";
 import {
-    forgotPasswordController,
+    resetForgotPasswordController,
+    sendForgotPasswordCodeController,
     signInController,
     signOutController,
-    signUpController
+    signUpController,
+    verifyForgotPasswordCodeController
 } from "../controllers/auth.controller";
-import { validateInputSignIn, validateInputSignUp } from "../middlewares/auth.middleware";
+import {
+    validateInputForgotPasswordSendCode,
+    validateInputResetPassword,
+    validateInputSignIn,
+    validateInputSignUp,
+    validateInputVerifyForgotPasswordCode
+} from "../middlewares/auth.middleware";
 
 const router = express.Router(); 
 
 router.post("/sign-in", validateInputSignIn, signInController);
+
 router.post("/sign-up", validateInputSignUp, signUpController);
-router.get("/sign-out", signOutController);
-router.patch("/forgot-password", forgotPasswordController);
+
+router.post("/sign-out", signOutController);
+
+router.post(
+    "/forgot-password/send-code",
+    validateInputForgotPasswordSendCode,
+    sendForgotPasswordCodeController
+);
+
+router.post(
+    "/forgot-password/verify-code",
+    validateInputVerifyForgotPasswordCode,
+    verifyForgotPasswordCodeController
+);
+
+
+router.patch(
+    "/forgot-password/reset",
+    validateInputResetPassword,
+    resetForgotPasswordController
+);
 
 export default router;
