@@ -3,6 +3,7 @@ import {
     createCommentService,
     deleteCommentService,
     getAllCommentsByPostService,
+    likeCommentService,
     updateCommentService
 } from "../services/comment.service";
 
@@ -24,11 +25,28 @@ export const getAllCommentsByPostController = async (req: Request, res: Response
 export const createCommentController = async (req: Request, res: Response) => {
     try {
         const user = (req as any).user;
-        const postId = req.params.postId as string;
+        const post = (req as any).post;
 
-        const comment = await createCommentService(req.body, user.userId, postId);
+        const comment = await createCommentService(req.body, user.userId, post);
 
         res.status(200).json({ message: "[POST]: Create Comment Success", data: comment });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+export const likeCommentController = async (req: Request, res: Response) => {
+    try {
+        const user = (req as any).user;
+        const comment = (req as any).comment;
+
+        const result = await likeCommentService(comment, user.userId);
+
+        res.status(200).json({
+            message: "[PATCH]: Like Comment Success",
+            liked: result.liked,
+            likesCount: result.likesCount
+        });
     } catch (error: any) {
         res.status(500).json({ message: error.message });
     }

@@ -4,14 +4,18 @@ import Post from "../models/Post";
 
 export const validateInputComment = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { content } = req.body;
+        const { content, parentCommentId } = req.body;
 
         if(!content) {
-            throw new Error("Vui lòng nhập bình luận");
+            return res.status(400).json("Content is required");
         }
 
         if(content.trim().length > 255) {
-            return res.status(400).json({ message: "Bình luận không được vượt quá 255 ký tự" });
+            return res.status(400).json({ message: "Comments must not exceed 255 characters" });
+        }
+
+        if (parentCommentId && typeof parentCommentId !== "string") {
+            return res.status(400).json({ message: "Invalid parent comment id" });
         }
         
         next();
@@ -37,14 +41,18 @@ export const loadComment = async (req: Request, res: Response, next: NextFunctio
 }
 
 export const canUpdateComment = (req: Request, res: Response, next: NextFunction) => {
-    const user = (req as any).user;
-    const comment = (req as any).comment;
+    try {
+        const user = (req as any).user;
+        const comment = (req as any).comment;
 
-    if (comment.userId.toString() !== user.userId) {
-        return res.status(403).json({ message: "You do not have permission" });
+        if (comment.userId.toString() !== user.userId) {
+            return res.status(403).json({ message: "You do not have permission" });
+        }
+
+        next();
+    } catch (error: any) {
+        return res.status(500).json({ message: error.message });
     }
-
-    next();
 }
 
 export const canDeleteComment = async (req: Request, res: Response, next: NextFunction) => {

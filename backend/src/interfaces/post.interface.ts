@@ -1,3 +1,3 @@
 export interface IPost {
-    title: string
+    title: string;
 }

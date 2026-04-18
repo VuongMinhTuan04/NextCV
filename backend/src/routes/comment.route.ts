@@ -13,6 +13,7 @@ import {
 } from "../middlewares/validateComment.middleware";
 import { validateObjectId } from "../middlewares/validateMongoId.middleware";
 import { authentication } from "../middlewares/auth.middleware";
+import { loadPost } from "../middlewares/validatePost.middleware";
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.post(
     "/post/:postId",
     authentication,
     validateObjectId("postId"),
+    loadPost("postId"),
     validateInputComment,
     createCommentController
 );

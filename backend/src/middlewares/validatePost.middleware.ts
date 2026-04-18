@@ -40,19 +40,21 @@ export const validateInputUpdatePost = async (req: Request, res: Response, next:
     }
 }
 
-export const loadPost = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const post = await Post.findById(req.params.id);
+export const loadPost = (paramName = "id") => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const post = await Post.findById(req.params[paramName]);
 
-        if (!post) {
-            return res.status(404).json({ message: "Post not found" });
+            if (!post) {
+                return res.status(404).json({ message: "Post not found" });
+            }
+
+            (req as any).post = post;
+
+            next();
+        } catch (error: any) {
+            return res.status(500).json({ message: error.message });
         }
-
-        (req as any).post = post;
-
-        next();
-    } catch (error: any) {
-        return res.status(500).json({ message: error.message });
     }
 }
 

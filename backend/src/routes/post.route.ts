@@ -34,7 +34,7 @@ router.patch(
     "/like/:id",
     authentication,
     validateObjectId("id"),
-    loadPost,
+    loadPost(),
     likePostController
 );
 
@@ -42,7 +42,7 @@ router.get(
     "/edit/:id",
     authentication,
     validateObjectId("id"),
-    loadPost,
+    loadPost(),
     canEditAndUpdatePost,
     editPostController
 );
@@ -51,7 +51,7 @@ router.patch(
     "/update/:id",
     authentication,
     validateObjectId("id"),
-    loadPost,
+    loadPost(),
     canEditAndUpdatePost,
     validateInputUpdatePost,
     updatePostController
@@ -61,7 +61,7 @@ router.delete(
     "/delete/:id",
     authentication,
     validateObjectId("id"),
-    loadPost,
+    loadPost(),
     canDeletePost,
     deletePostController
 );

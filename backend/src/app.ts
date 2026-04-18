@@ -9,6 +9,7 @@ import connectDB from "./configs/db";
 import postRouter from "./routes/post.route";
 import authRouter from "./routes/auth.route";
 import commentRouter from "./routes/comment.route";
+import notificationRouter from "./routes/notification.route";
 
 
 connectDB();
@@ -27,6 +28,7 @@ app.use(cookieParser());
 app.use("/api/post", postRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/comment", commentRouter);
+app.use("/api/notification", notificationRouter);
 
 app.use((req: Request, res: Response) => {
    res.status(404).json({ message: "404 Page Not Found" });

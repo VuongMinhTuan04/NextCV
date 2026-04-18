@@ -1,3 +1,4 @@
 export interface IComment {
-    content: string
+    content: string;
+    parentCommentId?: string | null;
 }

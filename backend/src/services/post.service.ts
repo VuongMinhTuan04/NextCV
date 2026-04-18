@@ -1,6 +1,9 @@
+import { NOTIFICATION_TYPE } from "../constants/typeNotification";
 import { IPost } from "../interfaces/post.interface";
 import Post from "../models/Post"
+import User from "../models/User";
 import { deleteFileFromCloudinary, getFileType, uploadFileToCloudinary } from "../utils/file.util";
+import { createNotificationService, deleteNotificationByActionService } from "./notification.service";
 
 export const getAllPostService = async (page: number, limit: number) => {
     const skip = (page - 1) * limit;
@@ -30,17 +33,42 @@ export const createPostService = async (data: IPost, file: Express.Multer.File, 
 export const likePostService = async (post: any, userId: string) => {
     const isLiked = post.likes.some((id: any) => id.toString() === userId);
 
-    if(isLiked) {
+    const actor = await User.findById(userId).select("fullname");
+
+    if (isLiked) {
         post.likes = post.likes.filter((id: any) => id.toString() !== userId);
-    } else {
-        post.likes.push(userId as any);
+
+        await post.save();
+
+        await deleteNotificationByActionService({
+            userId: post.userId.toString(),
+            fromUserId: userId,
+            postId: post._id.toString(),
+            commentId: null,
+            type: NOTIFICATION_TYPE.LIKE_POST
+        });
+
+        return {
+            liked: false,
+            likesCount: post.likes.length
+        };
     }
 
+    post.likes.push(userId as any);
     await post.save();
 
+    await createNotificationService({
+        userId: post.userId.toString(),
+        fromUserId: userId,
+        postId: post._id.toString(),
+        commentId: null,
+        type: NOTIFICATION_TYPE.LIKE_POST,
+        message: `${actor?.fullname ?? "Một người dùng"} vừa thích bài viết của bạn`
+    });
+
     return {
-        liked: !isLiked,
-        likesCount: post.likes.length,
+        liked: true,
+        likesCount: post.likes.length
     }
 }
 

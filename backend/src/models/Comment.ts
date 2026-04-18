@@ -12,11 +12,26 @@ const commentSchema = new mongoose.Schema(
             ref: "User",
             required: true
         },
+        parentCommentId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Comment",
+            default: null,
+            index: true
+        },
         content: {
             type: String,
             required: true,
             maxLength: 255,
             trim: true
+        },
+        likes: {
+            type: [
+                {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "User"
+                }
+            ],
+            default: []
         },
         isEdited: {
             type: Boolean,
@@ -28,6 +43,6 @@ const commentSchema = new mongoose.Schema(
     }
 );
 
-commentSchema.index({ postId: 1, createdAt: -1 });
+commentSchema.index({ postId: 1, parentCommentId: 1, createdAt: -1 });
 
 export default mongoose.model("Comment", commentSchema, "Comments");
