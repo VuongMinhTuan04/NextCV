@@ -4,10 +4,12 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import connectDB from "./configs/db";
 import postRouter from "./routes/post.route";
 import authRouter from "./routes/auth.route";
-import cookieParser from "cookie-parser";
+import commentRouter from "./routes/comment.route";
+
 
 connectDB();
 
@@ -24,6 +26,8 @@ app.use(cookieParser());
 
 app.use("/api/post", postRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/comment", commentRouter);
+
 app.use((req: Request, res: Response) => {
    res.status(404).json({ message: "404 Page Not Found" });
 });

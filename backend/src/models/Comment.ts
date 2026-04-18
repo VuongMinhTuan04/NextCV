@@ -15,12 +15,19 @@ const commentSchema = new mongoose.Schema(
         content: {
             type: String,
             required: true,
+            maxLength: 255,
             trim: true
+        },
+        isEdited: {
+            type: Boolean,
+            default: false
         }
     },
     {
         timestamps: true
     }
 );
+
+commentSchema.index({ postId: 1, createdAt: -1 });
 
 export default mongoose.model("Comment", commentSchema, "Comments");
