@@ -5,10 +5,9 @@ import MainLayout from "../layout/MainLayout"
 import HomePage from "../pages/HomePage"
 import NotFound from "../pages/NotFound"
 import PageLoader from "../components/loaders/PageLoader"
+import Information from "../pages/Information"
 
-const validRoutes = [
-  "/",
-]
+const validRoutes = ["/", "/information", "/information/:id"]
 
 const isValidPath = (pathname: string) => {
   return validRoutes.some((route) =>
@@ -18,7 +17,6 @@ const isValidPath = (pathname: string) => {
 
 const AppRoutes = () => {
   const location = useLocation()
-
   const [pageLoading, setPageLoading] = useState(false)
 
   const validPath = isValidPath(location.pathname)
@@ -64,6 +62,8 @@ const AppRoutes = () => {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/information" element={<Information />} />
+        <Route path="/information/:id" element={<Information />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
