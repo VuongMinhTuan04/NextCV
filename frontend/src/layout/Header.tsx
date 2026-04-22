@@ -4,7 +4,7 @@ import HeaderDesktop from "../components/headers/HeaderDesktop"
 import HeaderMobile from "../components/headers/HeaderMobile"
 import HeaderRight from "../components/headers/HeaderRight"
 import MobileSearchResult from "../components/headers/MobileSearchResult"
-import { useHeaderSearch } from "../hooks/useHeaderSearch"
+import { useHeaderSearch } from "../hooks/headers/useHeaderSearch"
 
 const Header = () => {
   const navigate = useNavigate()

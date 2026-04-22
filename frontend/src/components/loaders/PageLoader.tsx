@@ -1,8 +1,10 @@
+type SkeletonLineProps = {
+  width: string
+}
+
 const SkeletonLine = ({
   width,
-}: {
-  width: string
-}) => {
+}: SkeletonLineProps) => {
   return (
     <div
       className={`h-3 rounded-full bg-slate-200 ${width}`}
@@ -10,11 +12,21 @@ const SkeletonLine = ({
   )
 }
 
-const SkeletonPost = () => {
+const SkeletonAction = () => {
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="animate-pulse">
-        <div className="mb-4 flex items-center gap-3">
+    <div className="h-10 rounded-xl bg-slate-200" />
+  )
+}
+
+const SkeletonPost = ({
+  imageHeight,
+}: {
+  imageHeight: string
+}) => {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
           <div className="h-11 w-11 rounded-full bg-slate-200" />
 
           <div className="flex-1 space-y-2">
@@ -29,16 +41,17 @@ const SkeletonPost = () => {
           <SkeletonLine width="w-8/12" />
         </div>
 
-        <div className="my-4 h-72 rounded-2xl bg-slate-200" />
+        <div className={`rounded-2xl bg-slate-200 ${imageHeight}`} />
 
         <div className="grid grid-cols-3 gap-3">
-          <div className="h-10 rounded-xl bg-slate-200" />
-          <div className="h-10 rounded-xl bg-slate-200" />
-          <div className="h-10 rounded-xl bg-slate-200" />
+          <SkeletonAction />
+          <SkeletonAction />
+          <SkeletonAction />
         </div>
       </div>
 
-      <div className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_1.6s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/70
+        to-transparent animate-[shimmer_1.4s_linear_infinite]" />
     </div>
   )
 }
@@ -47,8 +60,8 @@ const PageLoader = () => {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
       <div className="space-y-5">
-        <SkeletonPost />
-        <SkeletonPost />
+        <SkeletonPost imageHeight="h-72" />
+        <SkeletonPost imageHeight="h-60" />
       </div>
     </div>
   )

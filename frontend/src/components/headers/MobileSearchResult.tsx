@@ -1,4 +1,4 @@
-import type { User } from "../../hooks/useHeaderSearch"
+import type { User } from "../../hooks/headers/useHeaderSearch"
 
 type Props = {
   mobileSearchOpen: boolean

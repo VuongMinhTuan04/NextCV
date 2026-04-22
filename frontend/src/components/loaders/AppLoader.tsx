@@ -1,14 +1,14 @@
 const AppLoader = () => {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#EFF1F3]">
-      <div className="mb-5 text-3xl font-bold text-blue-900">
-        NextCV
-      </div>
+    <div className="flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#EFF1F3] px-4">
+      <div className="animate-[fadeIn_.45s_ease] text-center">
+        <h1 className="text-4xl font-semibold tracking-wide text-blue-900">
+          NextCV
+        </h1>
 
-      <div className="flex items-center gap-2">
-        <span className="h-3 w-3 animate-bounce rounded-full bg-blue-500 [animation-delay:-0.3s]" />
-        <span className="h-3 w-3 animate-bounce rounded-full bg-blue-500 [animation-delay:-0.15s]" />
-        <span className="h-3 w-3 animate-bounce rounded-full bg-blue-500" />
+        <div className="mx-auto mt-5 h-1 w-44 overflow-hidden rounded-full bg-slate-200">
+          <div className="h-full w-1/2 rounded-full bg-blue-500 animate-[loaderBar_1.1s_ease-in-out_infinite]" />
+        </div>
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import { Home, Search } from "lucide-react"
 import { NavLink, useNavigate } from "react-router-dom"
 
-import type { User } from "../../hooks/useHeaderSearch"
+import type { User } from "../../hooks/headers/useHeaderSearch"
 
 type Props = {
   search: string

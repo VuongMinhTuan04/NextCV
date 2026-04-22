@@ -2,7 +2,7 @@ import { Home, Search, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { NavLink } from "react-router-dom"
 
-import type { User } from "../../hooks/useHeaderSearch"
+import type { User } from "../../hooks/headers/useHeaderSearch"
 
 type Props = {
   search: string

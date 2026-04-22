@@ -6,34 +6,42 @@ import HomePage from "../pages/HomePage"
 import NotFound from "../pages/NotFound"
 import PageLoader from "../components/loaders/PageLoader"
 
+const validRoutes = [
+  "/",
+]
+
+const isValidPath = (pathname: string) => {
+  return validRoutes.some((route) =>
+    matchPath({ path: route, end: true }, pathname)
+  )
+}
+
 const AppRoutes = () => {
-  const validRoutes = [
-    "/"
-  ]
-
-  const isValidPath = (pathname: string) => {
-    return validRoutes.some((route) =>
-      matchPath({ path: route, end: true }, pathname)
-    )
-  }
-
   const location = useLocation()
+
   const [pageLoading, setPageLoading] = useState(false)
+
   const validPath = isValidPath(location.pathname)
 
   useEffect(() => {
     if (!validPath) {
       setPageLoading(false)
+      document.body.style.overflow = ""
       return
     }
 
     setPageLoading(true)
+    document.body.style.overflow = "hidden"
 
     const timer = setTimeout(() => {
       setPageLoading(false)
+      document.body.style.overflow = ""
     }, 700)
 
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      document.body.style.overflow = ""
+    }
   }, [location.pathname, validPath])
 
   if (!validPath) {

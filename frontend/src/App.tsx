@@ -1,31 +1,65 @@
-import { BrowserRouter } from "react-router"
+import { BrowserRouter, useLocation, matchPath } from "react-router"
 import { Toaster } from "sonner"
-import AppRoutes from "./routes/AppRoutes"
 import { useEffect, useState } from "react"
+
+import AppRoutes from "./routes/AppRoutes"
 import AppLoader from "./components/loaders/AppLoader"
 
-function App() {
+const validRoutes = [
+  "/",
+]
+
+const isValidPath = (pathname: string) => {
+  return validRoutes.some((route) =>
+    matchPath({ path: route, end: true }, pathname)
+  )
+}
+
+const AppContent = () => {
+  const location = useLocation()
+
   const [loading, setLoading] = useState(true)
 
+  const validPath = isValidPath(location.pathname)
+
   useEffect(() => {
+    if (!validPath) {
+      setLoading(false)
+      document.body.style.overflow = ""
+      return
+    }
+
+    setLoading(true)
+    document.body.style.overflow = "hidden"
+
     const timer = setTimeout(() => {
       setLoading(false)
-    }, 1200)
+      document.body.style.overflow = ""
+    }, 2000)
 
-    return () => clearTimeout(timer)
-  }, [])
+    return () => {
+      clearTimeout(timer)
+      document.body.style.overflow = ""
+    }
+  }, [location.pathname, validPath])
 
-  if (loading) {
+  if (loading && validPath) {
     return <AppLoader />
   }
 
   return (
     <>
-      <BrowserRouter>
-        <Toaster richColors position="top-right" />
-        <AppRoutes />
-      </BrowserRouter>
+      <Toaster richColors position="top-right" />
+      <AppRoutes />
     </>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   )
 }
 
