@@ -32,6 +32,8 @@ const EditInformation = ({
 }: Props) => {
   const fileRef = useRef<HTMLInputElement>(null)
   const isComposing = useRef(false)
+  const phoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const aboutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   if (!open) return null
 
@@ -42,11 +44,7 @@ const EditInformation = ({
   }
 
   const handleFullNameChange = (value: string) => {
-    const cleaned = value.replace(/[^\p{L}\s]/gu, "")
-    if (isComposing.current) {
-      onFieldChange("fullName", cleaned)
-      return
-    }
+    const cleaned = value.replace(/\s{2,}/g, " ")
     onFieldChange("fullName", cleaned.slice(0, 50))
   }
 
@@ -60,11 +58,12 @@ const EditInformation = ({
   }
 
   const handleAboutChange = (value: string) => {
+    const cleaned = value.replace(/\s{2,}/g, " ")
     if (isComposing.current) {
-      onFieldChange("about", value)
+      onFieldChange("about", cleaned)
       return
     }
-    onFieldChange("about", value.slice(0, 100))
+    onFieldChange("about", cleaned.slice(0, 100))
   }
 
   const aboutLineCount = form.about.replace(/\r\n/g, "\n").split("\n").length
@@ -102,11 +101,6 @@ const EditInformation = ({
                 <input
                   value={form.fullName}
                   onChange={(e) => handleFullNameChange(e.target.value)}
-                  onCompositionStart={() => { isComposing.current = true }}
-                  onCompositionEnd={(e) => {
-                    isComposing.current = false
-                    handleFullNameChange(e.currentTarget.value)
-                  }}
                   placeholder="Nhập họ và tên"
                   className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${
                     errors.fullName
@@ -114,11 +108,12 @@ const EditInformation = ({
                       : "border-slate-200 bg-white focus:border-blue-300"
                   }`}
                 />
-                <div className="mt-1 text-right text-xs text-slate-400">
-                  {form.fullName.length}/50
+                <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
+                  <span>Không chứa số hoặc ký tự đặc biệt</span>
+                  <span>{form.fullName.length}/50</span>
                 </div>
                 {errors.fullName && (
-                  <p className="mt-2 text-sm text-rose-500">{errors.fullName}</p>
+                  <p className="mt-1 text-sm text-rose-500">{errors.fullName}</p>
                 )}
               </div>
 
@@ -129,12 +124,16 @@ const EditInformation = ({
                 <input
                   value={form.phone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
-                  onCompositionStart={() => { isComposing.current = true }}
+                  onCompositionStart={() => {
+                    isComposing.current = true
+                    if (phoneTimerRef.current) clearTimeout(phoneTimerRef.current)
+                  }}
                   onCompositionEnd={(e) => {
                     isComposing.current = false
-                    handlePhoneChange(e.currentTarget.value)
+                    phoneTimerRef.current = setTimeout(() => {
+                      handlePhoneChange(e.currentTarget.value)
+                    }, 0)
                   }}
-                  inputMode="numeric"
                   placeholder="Nhập số điện thoại"
                   className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${
                     errors.phone
@@ -142,11 +141,12 @@ const EditInformation = ({
                       : "border-slate-200 bg-white focus:border-blue-300"
                   }`}
                 />
-                <div className="mt-1 text-right text-xs text-slate-400">
-                  {form.phone.length}/11
+                <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
+                  <span>Chỉ nhập số, tối thiểu 10 chữ số</span>
+                  <span>{form.phone.length}/11</span>
                 </div>
                 {errors.phone && (
-                  <p className="mt-2 text-sm text-rose-500">{errors.phone}</p>
+                  <p className="mt-1 text-sm text-rose-500">{errors.phone}</p>
                 )}
               </div>
 
@@ -164,10 +164,15 @@ const EditInformation = ({
                       : "border-slate-200 bg-white focus:border-blue-300"
                   }`}
                   onChange={(e) => handleAboutChange(e.target.value)}
-                  onCompositionStart={() => { isComposing.current = true }}
+                  onCompositionStart={() => {
+                    isComposing.current = true
+                    if (aboutTimerRef.current) clearTimeout(aboutTimerRef.current)
+                  }}
                   onCompositionEnd={(e) => {
                     isComposing.current = false
-                    handleAboutChange(e.currentTarget.value)
+                    aboutTimerRef.current = setTimeout(() => {
+                      handleAboutChange(e.currentTarget.value)
+                    }, 0)
                   }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" && aboutLineCount >= 2) {
@@ -180,7 +185,7 @@ const EditInformation = ({
                   <span>{form.about.length}/100</span>
                 </div>
                 {errors.about && (
-                  <p className="mt-2 text-sm text-rose-500">{errors.about}</p>
+                  <p className="mt-1 text-sm text-rose-500">{errors.about}</p>
                 )}
               </div>
 

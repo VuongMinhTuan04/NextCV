@@ -11,6 +11,7 @@ type Props = {
   onAddComment: (payload: { content: string; file: File | null }) => void
   onUpdateComment: (commentId: string, content: string) => void
   onDeleteComment: (commentId: string) => void
+  onPreviewImage: (src: string) => void
 }
 
 const CommentBox = ({
@@ -19,6 +20,7 @@ const CommentBox = ({
   onAddComment,
   onUpdateComment,
   onDeleteComment,
+  onPreviewImage,
 }: Props) => {
   const {
     content,
@@ -49,15 +51,29 @@ const CommentBox = ({
       {comments.length > 0 && (
         <div className="space-y-3">
           {comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} currentUser={currentUser}
-              onUpdate={onUpdateComment} onDelete={onDeleteComment}
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              currentUser={currentUser}
+              onUpdate={onUpdateComment}
+              onDelete={onDeleteComment}
+              onPreviewImage={onPreviewImage}
             />
           ))}
         </div>
       )}
 
-      <CommentInput currentUser={currentUser} value={content} file={file} fileName={fileName} fileKind={fileKind}
-        canSend={canSend} onChange={setContent} onSelectFile={selectFile} onRemoveFile={removeFile} onSend={handleSend}
+      <CommentInput
+        currentUser={currentUser}
+        value={content}
+        file={file}
+        fileName={fileName}
+        fileKind={fileKind}
+        canSend={canSend}
+        onChange={setContent}
+        onSelectFile={selectFile}
+        onRemoveFile={removeFile}
+        onSend={handleSend}
       />
     </div>
   )

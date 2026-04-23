@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { mockInformation } from "../../services/mockInformation"
 
 export type User = {
   id: string
@@ -6,11 +7,11 @@ export type User = {
   avatar: string
 }
 
-const mockUsers: User[] = [
-  { id: "1", fullName: "An Nguyen", avatar: "https://i.pravatar.cc/100?img=1" },
-  { id: "2", fullName: "Ah Tran", avatar: "https://i.pravatar.cc/100?img=2" },
-  { id: "3", fullName: "Bao Le", avatar: "https://i.pravatar.cc/100?img=3" },
-]
+const users: User[] = mockInformation.map((info) => ({
+  id: info.postOwnerId,
+  fullName: info.fullName,
+  avatar: info.avatar,
+}))
 
 const normalize = (value: string) => value.trim().toLowerCase()
 
@@ -37,8 +38,8 @@ export const useHeaderSearch = () => {
     }
 
     setResults(
-      mockUsers.filter((user) =>
-        user.fullName.toLowerCase().startsWith(keyword)
+      users.filter((user) =>
+        normalize(user.fullName).startsWith(keyword)
       )
     )
   }, [search])

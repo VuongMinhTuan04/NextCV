@@ -51,16 +51,16 @@ export const validateEditForm = (form: EditInformationFormState) => {
 
   if (!fullName) {
     errors.fullName = "Vui lòng nhập họ và tên."
-  } else if (fullName.length < 2 || fullName.length > 50) {
-    errors.fullName = "Họ và tên từ 2 đến 50 ký tự."
+  } else if (fullName.length < 2) {
+    errors.fullName = "Họ và tên phải có ít nhất 2 ký tự."
   } else if (!/^[\p{L}\s]+$/u.test(fullName)) {
-    errors.fullName = "Họ và tên chỉ chứa chữ cái."
+    errors.fullName = "Họ và tên không được chứa số hoặc ký tự đặc biệt."
   }
 
   if (!phone) {
     errors.phone = "Vui lòng nhập số điện thoại."
   } else if (phone.length < 10) {
-    errors.phone = "Số điện thoại không hợp lệ (cần ít nhất 10 số)."
+    errors.phone = "Số điện thoại phải có ít nhất 10 số."
   }
 
   if (about.length > 100) {

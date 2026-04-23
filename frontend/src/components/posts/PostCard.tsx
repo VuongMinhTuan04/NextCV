@@ -74,20 +74,37 @@ const PostCard = ({
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <PostHeader post={post} canManage={canManage} isEditing={isEditing} draftTitle={draftTitle}
-        onDraftTitleChange={setDraftTitle} onStartEdit={startEdit} onSaveEdit={handleSaveEdit}
-        onCancelEdit={cancelEdit} onDeletePost={handleDeletePost}
+      <PostHeader
+        post={post}
+        canManage={canManage}
+        isEditing={isEditing}
+        draftTitle={draftTitle}
+        onDraftTitleChange={setDraftTitle}
+        onStartEdit={startEdit}
+        onSaveEdit={handleSaveEdit}
+        onCancelEdit={cancelEdit}
+        onDeletePost={handleDeletePost}
       />
 
       <PostMedia attachment={post.attachment} onPreviewImage={onPreviewImage} />
 
-      <PostActions liked={post.liked} likes={post.likes} commentsCount={post.comments.length} isCommentOpen={isCommentOpen}
-        onToggleLike={() => onToggleLike(post.id)} onToggleComment={() => setIsCommentOpen((prev) => !prev)}
+      <PostActions
+        liked={post.liked}
+        likes={post.likes}
+        commentsCount={post.comments.length}
+        isCommentOpen={isCommentOpen}
+        onToggleLike={() => onToggleLike(post.id)}
+        onToggleComment={() => setIsCommentOpen((prev) => !prev)}
       />
 
       {isCommentOpen && (
-        <CommentBox currentUser={currentUser} comments={post.comments} onAddComment={handleAddComment}
-          onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment}
+        <CommentBox
+          currentUser={currentUser}
+          comments={post.comments}
+          onAddComment={handleAddComment}
+          onUpdateComment={handleUpdateComment}
+          onDeleteComment={handleDeleteComment}
+          onPreviewImage={onPreviewImage}
         />
       )}
     </article>

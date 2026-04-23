@@ -7,26 +7,32 @@ type Props = {
   information: InformationData
   canEditInformation: boolean
   onEditInformation: () => void
+  onPreviewImage: (src: string) => void
 }
 
 const InformationCard = ({
   information,
   canEditInformation,
   onEditInformation,
+  onPreviewImage,
 }: Props) => {
   return (
     <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm lg:max-w-3xl lg:mx-auto">
       <div className="bg-gradient-to-br from-white to-slate-50 px-4 py-4 sm:px-6 sm:py-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-1 items-start gap-4 sm:items-center sm:gap-5">
-            <div className="shrink-0 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 p-1 shadow-sm">
+            <button
+              type="button"
+              onClick={() => onPreviewImage(information.avatar)}
+              className="shrink-0 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 p-1 shadow-sm cursor-pointer transition hover:opacity-80"
+            >
               <Avatar
                 src={information.avatar}
                 alt={information.fullName}
                 size="lg"
                 className="h-20 w-20 border-4 border-white text-xl shadow-lg sm:h-24 sm:w-24"
               />
-            </div>
+            </button>
 
             <div className="min-w-0 space-y-3 pt-1 sm:pt-0">
               <div className="space-y-1">

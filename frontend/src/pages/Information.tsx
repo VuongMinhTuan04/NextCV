@@ -53,6 +53,7 @@ const Information = () => {
           information={information}
           canEditInformation={canEditInformation}
           onEditInformation={openEditModal}
+          onPreviewImage={openPreview}
         />
 
         <InformationPosts
@@ -68,27 +69,31 @@ const Information = () => {
           onPreviewImage={openPreview}
         />
 
-        <EditInformation
-          open={editOpen}
-          form={editForm}
-          errors={editErrors}
-          onFieldChange={setField}
-          onAvatarChange={setAvatar}
-          onUpdate={handleUpdateInformation}
-          onOpenPassword={openPasswordModal}
-          onClose={closeEditModal}
-          isDirty={isEditDirty}
-        />
+        {canEditInformation && (
+          <>
+            <EditInformation
+              open={editOpen}
+              form={editForm}
+              errors={editErrors}
+              onFieldChange={setField}
+              onAvatarChange={setAvatar}
+              onUpdate={handleUpdateInformation}
+              onOpenPassword={openPasswordModal}
+              onClose={closeEditModal}
+              isDirty={isEditDirty}
+            />
 
-        <ChangePasswordModal
-          open={passwordOpen}
-          form={passwordForm}
-          errors={passwordErrors}
-          strength={passwordStrength}
-          onFieldChange={setPasswordField}
-          onChangePassword={handleChangePassword}
-          onBack={backToEditModal}
-        />
+            <ChangePasswordModal
+              open={passwordOpen}
+              form={passwordForm}
+              errors={passwordErrors}
+              strength={passwordStrength}
+              onFieldChange={setPasswordField}
+              onChangePassword={handleChangePassword}
+              onBack={backToEditModal}
+            />
+          </>
+        )}
 
         <ImagePreviewModal src={previewSrc} onClose={closePreview} />
       </div>

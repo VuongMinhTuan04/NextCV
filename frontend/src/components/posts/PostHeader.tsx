@@ -1,6 +1,6 @@
 import { Edit3, MoreHorizontal, Trash2 } from "lucide-react"
-import { useState } from "react"
 import { toast } from "sonner"
+import { useNavigate } from "react-router-dom"
 
 import type { PostItem } from "../../services/mockPosts"
 import Avatar from "../commons/Avatar"
@@ -30,12 +30,22 @@ const PostHeader = ({
   onCancelEdit,
   onDeletePost,
 }: Props) => {
-  const [localEditing, setLocalEditing] = useState(isEditing)
+  const navigate = useNavigate()
+
+  const handleAvatarClick = () => {
+    navigate(`/information/${post.user.id}`)
+  }
 
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="flex min-w-0 flex-1 gap-3">
-        <Avatar src={post.user.avatar} alt={post.user.fullName} />
+        <button
+          type="button"
+          onClick={handleAvatarClick}
+          className="shrink-0 cursor-pointer rounded-full transition hover:opacity-80"
+        >
+          <Avatar src={post.user.avatar} alt={post.user.fullName} />
+        </button>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 leading-none">

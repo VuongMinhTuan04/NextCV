@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { toast } from "sonner"
 
 import * as mockPostsModule from "../../services/mockPosts"
 import { getInformationById } from "../../services/mockInformation"
+import { currentUser } from "../../services/mockPosts"
 
 import type { InformationData } from "../../services/mockInformation"
 import type { PostItem, User } from "../../services/mockPosts"
 
 import {
   buildPasswordStrength,
+  validateEditForm,
   type ChangePasswordErrors,
   type ChangePasswordFormState,
   type EditInformationErrors,
@@ -43,12 +46,21 @@ const buildEditForm = (information: InformationData): EditInformationFormState =
 
 const isObjectUrl = (value: string) => value.startsWith("blob:")
 
-const areEqual = (a: EditInformationFormState, b: EditInformationFormState) => {
+const normalizeForm = (form: EditInformationFormState) => ({
+  fullName: form.fullName.trim(),
+  phone: form.phone.replace(/\D/g, ""),
+  about: form.about.trim(),
+  avatar: form.avatar,
+})
+
+const areFormsEqual = (a: EditInformationFormState, b: EditInformationFormState) => {
+  const na = normalizeForm(a)
+  const nb = normalizeForm(b)
   return (
-    a.fullName === b.fullName &&
-    a.phone === b.phone &&
-    a.about === b.about &&
-    a.avatar === b.avatar
+    na.fullName === nb.fullName &&
+    na.phone === nb.phone &&
+    na.about === nb.about &&
+    na.avatar === nb.avatar
   )
 }
 
@@ -58,6 +70,7 @@ export const useInformationPage = (id?: string) => {
   const [editOpen, setEditOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [previewSrc, setPreviewSrc] = useState("")
+  const [submitted, setSubmitted] = useState(false)
 
   const resolvedInformation = useMemo(() => {
     return getInformationById(id)
@@ -76,15 +89,13 @@ export const useInformationPage = (id?: string) => {
 
   const [informationPosts, setInformationPosts] = useState<PostItem[]>([])
 
-  const viewerUser: User = {
+  const viewerUser: User = useMemo(() => ({
     id: resolvedInformation.postOwnerId,
     fullName: resolvedInformation.fullName,
     avatar: resolvedInformation.avatar,
-  }
+  }), [resolvedInformation])
 
-  const canEditInformation = useMemo(() => {
-    return resolvedInformation.postOwnerId === viewerUser.id
-  }, [resolvedInformation.postOwnerId, viewerUser.id])
+  const canEditInformation = currentUser.id === resolvedInformation.postOwnerId
 
   const [information, setInformation] = useState<InformationData>(resolvedInformation)
 
@@ -95,7 +106,6 @@ export const useInformationPage = (id?: string) => {
 
   const [editForm, setEditForm] = useState<EditInformationFormState>(initialEditForm)
   const [editInitialForm, setEditInitialForm] = useState<EditInformationFormState>(initialEditForm)
-  const [editErrors, setEditErrors] = useState<EditInformationErrors>({})
 
   const [passwordForm, setPasswordForm] = useState<ChangePasswordFormState>({
     oldPassword: "",
@@ -104,6 +114,19 @@ export const useInformationPage = (id?: string) => {
   })
 
   const [passwordErrors, setPasswordErrors] = useState<ChangePasswordErrors>({})
+
+  const currentErrors = useMemo(() => validateEditForm(editForm), [editForm])
+
+  const displayErrors = submitted ? currentErrors : {}
+
+  const isDirty = useMemo(
+    () => !areFormsEqual(editForm, editInitialForm),
+    [editForm, editInitialForm]
+  )
+
+  const isFormValid = useMemo(() => Object.keys(currentErrors).length === 0, [currentErrors])
+
+  const canUpdate = isDirty && isFormValid
 
   useEffect(() => {
     if (draftAvatarRef.current && isObjectUrl(draftAvatarRef.current)) {
@@ -116,7 +139,7 @@ export const useInformationPage = (id?: string) => {
     const nextForm = buildEditForm(resolvedInformation)
     setEditForm(nextForm)
     setEditInitialForm(nextForm)
-    setEditErrors({})
+    setSubmitted(false)
 
     setPasswordForm({
       oldPassword: "",
@@ -142,10 +165,6 @@ export const useInformationPage = (id?: string) => {
     }
   }, [])
 
-  const isEditDirty = useMemo(() => {
-    return !areEqual(editForm, editInitialForm)
-  }, [editForm, editInitialForm])
-
   const passwordStrength = useMemo(
     () => buildPasswordStrength(passwordForm.newPassword),
     [passwordForm.newPassword]
@@ -154,11 +173,11 @@ export const useInformationPage = (id?: string) => {
   const openEditModal = useCallback(() => {
     const nextForm = buildEditForm(information)
 
-    setEditErrors({})
     setPasswordErrors({})
     setPasswordOpen(false)
     setEditForm(nextForm)
     setEditInitialForm(nextForm)
+    setSubmitted(false)
     setEditOpen(true)
   }, [information])
 
@@ -173,7 +192,7 @@ export const useInformationPage = (id?: string) => {
 
     draftAvatarRef.current = null
     setEditForm(buildEditForm(information))
-    setEditErrors({})
+    setSubmitted(false)
     setEditOpen(false)
   }, [information])
 
@@ -198,11 +217,6 @@ export const useInformationPage = (id?: string) => {
       setEditForm((prev) => ({
         ...prev,
         [field]: value,
-      }))
-
-      setEditErrors((prev) => ({
-        ...prev,
-        [field]: undefined,
       }))
     },
     []
@@ -239,17 +253,52 @@ export const useInformationPage = (id?: string) => {
     []
   )
 
+  const handleUpdateInformation = useCallback(() => {
+    const nextErrors = validateEditForm(editForm)
+
+    if (Object.keys(nextErrors).length > 0) {
+      setSubmitted(true)
+      return
+    }
+
+    if (!isDirty) return
+
+    const previousAvatar = information.avatar
+    const nextInformation: InformationData = {
+      ...information,
+      fullName: editForm.fullName.trim(),
+      phone: editForm.phone.replace(/\D/g, ""),
+      about: editForm.about.replace(/\r\n/g, "\n"),
+      avatar: editForm.avatar,
+    }
+
+    setInformation(nextInformation)
+
+    const nextForm = buildEditForm(nextInformation)
+    setEditForm(nextForm)
+    setEditInitialForm(nextForm)
+    setSubmitted(false)
+    setEditOpen(false)
+
+    if (previousAvatar !== nextInformation.avatar && previousAvatar.startsWith("blob:")) {
+      URL.revokeObjectURL(previousAvatar)
+    }
+
+    draftAvatarRef.current = null
+    toast.success("Cập nhật thành công")
+  }, [editForm, information, isDirty])
+
   const handlers = useInformationHandlers({
     editForm,
     information,
     passwordForm,
-    isEditDirty,
+    isEditDirty: canUpdate,
     viewerUser,
     draftAvatarRef,
     buildEditForm,
     setInformation,
     setInformationPosts,
-    setEditErrors,
+    setEditErrors: () => {},
     setEditForm,
     setEditInitialForm,
     setEditOpen,
@@ -257,6 +306,16 @@ export const useInformationPage = (id?: string) => {
     setPasswordErrors,
     setPasswordOpen,
   })
+
+  const {
+    handleChangePassword,
+    handleToggleLike,
+    handleDeletePost,
+    handleUpdatePost,
+    handleAddComment,
+    handleUpdateComment,
+    handleDeleteComment,
+  } = handlers
 
   const openPreview = useCallback((src: string) => {
     setPreviewSrc(src)
@@ -277,12 +336,12 @@ export const useInformationPage = (id?: string) => {
     previewSrc,
 
     editForm,
-    editErrors,
+    editErrors: displayErrors,
     passwordForm,
     passwordErrors,
     passwordStrength,
 
-    isEditDirty,
+    isEditDirty: canUpdate,
 
     openPreview,
     closePreview,
@@ -294,7 +353,14 @@ export const useInformationPage = (id?: string) => {
     setField,
     setAvatar,
     setPasswordField,
+    handleUpdateInformation,
 
-    ...handlers,
+    handleChangePassword,
+    handleToggleLike,
+    handleDeletePost,
+    handleUpdatePost,
+    handleAddComment,
+    handleUpdateComment,
+    handleDeleteComment,
   }
 }

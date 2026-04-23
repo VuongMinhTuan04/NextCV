@@ -14,7 +14,7 @@ const ImagePreviewModal = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex cursor-pointer items-center justify-center bg-black/80 px-4"
+      className="fixed inset-0 z-50 flex cursor-pointer items-center justify-center bg-black/80 p-4"
     >
       <button
         type="button"
@@ -31,7 +31,7 @@ const ImagePreviewModal = ({
         onClick={(event) =>
           event.stopPropagation()
         }
-        className="max-h-[85vh] max-w-[95vw] cursor-default rounded-2xl object-contain shadow-2xl"
+        className="max-h-[95vh] max-w-[95vw] min-h-[50vh] min-w-[50vw] cursor-default rounded-2xl object-contain shadow-2xl"
       />
     </div>
   )

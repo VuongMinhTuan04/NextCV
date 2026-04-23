@@ -7,6 +7,7 @@ import {
   X,
 } from "lucide-react"
 import { toast } from "sonner"
+import { useNavigate } from "react-router-dom"
 
 import type { User } from "../../services/mockPosts"
 import type { AttachmentKind } from "../../utils/file"
@@ -92,6 +93,7 @@ const CreatePost = ({
 }: Props) => {
   const fileInputRef =
     useRef<HTMLInputElement | null>(null)
+  const navigate = useNavigate()
 
   const {
     title,
@@ -144,14 +146,23 @@ const CreatePost = ({
     toast.success("Đăng bài thành công")
   }
 
+  const handleAvatarClick = () => {
+    navigate(`/information/${currentUser.id}`)
+  }
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      {/* ROW 1 */}
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-        <Avatar
-          src={currentUser.avatar}
-          alt={currentUser.fullName}
-        />
+        <button
+          type="button"
+          onClick={handleAvatarClick}
+          className="shrink-0 rounded-full cursor-pointer transition hover:opacity-80"
+        >
+          <Avatar
+            src={currentUser.avatar}
+            alt={currentUser.fullName}
+          />
+        </button>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
           <div className="flex items-center gap-2">
@@ -188,7 +199,6 @@ const CreatePost = ({
         </button>
       </div>
 
-      {/* ROW 2 */}
       {file && fileKind && (
         <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-3">
           <div />
