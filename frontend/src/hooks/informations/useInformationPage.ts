@@ -1,525 +1,300 @@
-import { useEffect, useMemo, useRef, useState } from "react"
-import { toast } from "sonner"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { useImagePreview } from "../commons/useImagePreview"
-import { buildAttachment } from "../../utils/file"
+import * as mockPostsModule from "../../services/mockPosts"
+import { getInformationById } from "../../services/mockInformation"
+
+import type { InformationData } from "../../services/mockInformation"
+import type { PostItem, User } from "../../services/mockPosts"
+
 import {
-  currentUser,
-  initialPosts,
-  type PostItem,
-  type User,
-} from "../../services/mockPosts"
-import {
-  getInformationById,
-  type InformationData,
-} from "../../services/mockInformation"
+  buildPasswordStrength,
+  type ChangePasswordErrors,
+  type ChangePasswordFormState,
+  type EditInformationErrors,
+  type EditInformationField,
+  type EditInformationFormState,
+  type PasswordStrengthState,
+} from "./validation"
 
-export type EditInformationFormState = {
-  email: string
-  fullName: string
-  phone: string
-  description: string
-  avatar: string
+import { useInformationHandlers } from "./useInformationHandlers"
+
+export type {
+  EditInformationField,
+  EditInformationFormState,
+  EditInformationErrors,
+  ChangePasswordFormState,
+  ChangePasswordErrors,
+  PasswordStrengthState,
+} from "./validation"
+
+const pickFirst = (...values: unknown[]) => {
+  return values.find((value) => value !== undefined && value !== null)
 }
 
-export type EditInformationErrors = {
-  fullName?: string
-  phone?: string
-}
-
-export type ChangePasswordFormState = {
-  oldPassword: string
-  newPassword: string
-  confirmPassword: string
-}
-
-export type ChangePasswordErrors = {
-  oldPassword?: string
-  newPassword?: string
-  confirmPassword?: string
-}
-
-export type PasswordStrengthState = {
-  level: "low" | "medium" | "high"
-  score: 1 | 2 | 3
-  label: string
-}
-
-const createInformationForm = (
-  information: InformationData
-): EditInformationFormState => ({
-  email: information.email,
-  fullName: information.fullName,
-  phone: information.phone,
-  description: information.description,
-  avatar: information.avatar,
-})
-
-const createPasswordForm = (): ChangePasswordFormState => ({
-  oldPassword: "",
-  newPassword: "",
-  confirmPassword: "",
-})
-
-const getPasswordStrength = (
-  password: string
-): PasswordStrengthState => {
-  if (password.length < 6) {
-    return { level: "low", score: 1, label: "Thấp" }
+const buildEditForm = (information: InformationData): EditInformationFormState => {
+  return {
+    email: information.email ?? "",
+    fullName: information.fullName ?? "",
+    phone: information.phone ?? "",
+    about: information.about ?? "",
+    avatar: information.avatar ?? "",
   }
-
-  const hasUppercase = /[A-Z]/.test(password)
-  const hasLowercase = /[a-z]/.test(password)
-  const hasNumber = /\d/.test(password)
-  const hasSpecial = /[^A-Za-z0-9]/.test(password)
-
-  const scoreBase = [
-    hasUppercase,
-    hasLowercase,
-    hasNumber,
-    hasSpecial,
-  ].filter(Boolean).length
-
-  if (password.length >= 8 && scoreBase >= 3) {
-    return { level: "high", score: 3, label: "Cao" }
-  }
-
-  if (scoreBase >= 2) {
-    return { level: "medium", score: 2, label: "Trung bình" }
-  }
-
-  return { level: "low", score: 1, label: "Thấp" }
 }
 
-const getOwnerPosts = (ownerId: string) => {
-  return initialPosts.filter((post) => post.user.id === ownerId)
-}
+const isObjectUrl = (value: string) => value.startsWith("blob:")
 
-const syncInformationIntoPosts = (
-  nextInformation: InformationData,
-  posts: PostItem[]
-) => {
-  return posts.map((post) => {
-    const nextPostUser =
-      post.user.id === nextInformation.postOwnerId
-        ? {
-            ...post.user,
-            fullName: nextInformation.fullName,
-            avatar: nextInformation.avatar,
-          }
-        : post.user
-
-    return {
-      ...post,
-      user: nextPostUser,
-      comments: post.comments.map((comment) => {
-        const nextCommentUser =
-          comment.user.id === nextInformation.postOwnerId
-            ? {
-                ...comment.user,
-                fullName: nextInformation.fullName,
-                avatar: nextInformation.avatar,
-              }
-            : comment.user
-
-        return {
-          ...comment,
-          user: nextCommentUser,
-        }
-      }),
-    }
-  })
-}
-
-export const useInformationPage = (informationId?: string) => {
-  const routeInformation = useMemo(
-    () => getInformationById(informationId),
-    [informationId]
+const areEqual = (a: EditInformationFormState, b: EditInformationFormState) => {
+  return (
+    a.fullName === b.fullName &&
+    a.phone === b.phone &&
+    a.about === b.about &&
+    a.avatar === b.avatar
   )
+}
 
-  const [information, setInformation] =
-    useState<InformationData>(routeInformation)
-
-  const [informationPosts, setInformationPosts] = useState<PostItem[]>(
-    () => getOwnerPosts(routeInformation.postOwnerId)
-  )
+export const useInformationPage = (id?: string) => {
+  const draftAvatarRef = useRef<string | null>(null)
 
   const [editOpen, setEditOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
+  const [previewSrc, setPreviewSrc] = useState("")
 
-  const [editForm, setEditForm] = useState<EditInformationFormState>(
-    createInformationForm(routeInformation)
+  const resolvedInformation = useMemo(() => {
+    return getInformationById(id)
+  }, [id])
+
+  const postsModule = mockPostsModule as Record<string, unknown>
+
+  const rawPosts = useMemo(() => {
+    return pickFirst(
+      postsModule.mockPosts,
+      postsModule.posts,
+      postsModule.informationPosts,
+      postsModule.data
+    )
+  }, [postsModule])
+
+  const [informationPosts, setInformationPosts] = useState<PostItem[]>([])
+
+  const viewerUser: User = {
+    id: resolvedInformation.postOwnerId,
+    fullName: resolvedInformation.fullName,
+    avatar: resolvedInformation.avatar,
+  }
+
+  const canEditInformation = useMemo(() => {
+    return resolvedInformation.postOwnerId === viewerUser.id
+  }, [resolvedInformation.postOwnerId, viewerUser.id])
+
+  const [information, setInformation] = useState<InformationData>(resolvedInformation)
+
+  const initialEditForm = useMemo(
+    () => buildEditForm(resolvedInformation),
+    [resolvedInformation]
   )
+
+  const [editForm, setEditForm] = useState<EditInformationFormState>(initialEditForm)
+  const [editInitialForm, setEditInitialForm] = useState<EditInformationFormState>(initialEditForm)
   const [editErrors, setEditErrors] = useState<EditInformationErrors>({})
 
-  const [passwordForm, setPasswordForm] =
-    useState<ChangePasswordFormState>(createPasswordForm())
-  const [passwordErrors, setPasswordErrors] =
-    useState<ChangePasswordErrors>({})
+  const [passwordForm, setPasswordForm] = useState<ChangePasswordFormState>({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
 
-  const { previewSrc, openPreview, closePreview } = useImagePreview()
-  const avatarPreviewUrlRef = useRef<string | null>(null)
+  const [passwordErrors, setPasswordErrors] = useState<ChangePasswordErrors>({})
 
   useEffect(() => {
-    const nextInformation = getInformationById(informationId)
+    if (draftAvatarRef.current && isObjectUrl(draftAvatarRef.current)) {
+      URL.revokeObjectURL(draftAvatarRef.current)
+      draftAvatarRef.current = null
+    }
 
-    setInformation(nextInformation)
-    setInformationPosts(getOwnerPosts(nextInformation.postOwnerId))
-    setEditOpen(false)
-    setPasswordOpen(false)
-    setEditForm(createInformationForm(nextInformation))
+    setInformation(resolvedInformation)
+
+    const nextForm = buildEditForm(resolvedInformation)
+    setEditForm(nextForm)
+    setEditInitialForm(nextForm)
     setEditErrors({})
-    setPasswordForm(createPasswordForm())
-    setPasswordErrors({})
 
+    setPasswordForm({
+      oldPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    })
+    setPasswordErrors({})
+  }, [resolvedInformation])
+
+  useEffect(() => {
+    if (Array.isArray(rawPosts)) {
+      setInformationPosts(rawPosts as PostItem[])
+    } else {
+      setInformationPosts([])
+    }
+  }, [rawPosts])
+
+  useEffect(() => {
     return () => {
-      if (avatarPreviewUrlRef.current) {
-        URL.revokeObjectURL(avatarPreviewUrlRef.current)
-        avatarPreviewUrlRef.current = null
+      if (draftAvatarRef.current && isObjectUrl(draftAvatarRef.current)) {
+        URL.revokeObjectURL(draftAvatarRef.current)
       }
     }
-  }, [informationId])
+  }, [])
 
-  const canEditInformation = information.postOwnerId === currentUser.id
+  const isEditDirty = useMemo(() => {
+    return !areEqual(editForm, editInitialForm)
+  }, [editForm, editInitialForm])
 
-  const viewerUser: User = useMemo(() => {
-    if (information.postOwnerId !== currentUser.id) {
-      return currentUser
-    }
+  const passwordStrength = useMemo(
+    () => buildPasswordStrength(passwordForm.newPassword),
+    [passwordForm.newPassword]
+  )
 
-    return {
-      ...currentUser,
-      fullName: information.fullName,
-      avatar: information.avatar,
-    }
-  }, [information.avatar, information.fullName, information.postOwnerId])
+  const openEditModal = useCallback(() => {
+    const nextForm = buildEditForm(information)
 
-  const openEditModal = () => {
-    setEditForm(createInformationForm(information))
     setEditErrors({})
-    setPasswordOpen(false)
-    setEditOpen(true)
-  }
-
-  const closeEditModal = () => {
-    setEditOpen(false)
-    setEditErrors({})
-  }
-
-  const openPasswordModal = () => {
-    setPasswordForm(createPasswordForm())
     setPasswordErrors({})
+    setPasswordOpen(false)
+    setEditForm(nextForm)
+    setEditInitialForm(nextForm)
+    setEditOpen(true)
+  }, [information])
+
+  const closeEditModal = useCallback(() => {
+    if (
+      draftAvatarRef.current &&
+      isObjectUrl(draftAvatarRef.current) &&
+      draftAvatarRef.current !== information.avatar
+    ) {
+      URL.revokeObjectURL(draftAvatarRef.current)
+    }
+
+    draftAvatarRef.current = null
+    setEditForm(buildEditForm(information))
+    setEditErrors({})
+    setEditOpen(false)
+  }, [information])
+
+  const openPasswordModal = useCallback(() => {
+    setPasswordErrors({})
+    setPasswordForm({
+      oldPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    })
     setEditOpen(false)
     setPasswordOpen(true)
-  }
+  }, [])
 
-  const backToEditModal = () => {
+  const backToEditModal = useCallback(() => {
     setPasswordOpen(false)
-    setPasswordErrors({})
     setEditOpen(true)
-  }
+  }, [])
 
-  const closePasswordModal = () => {
-    setPasswordOpen(false)
-    setPasswordErrors({})
-  }
-
-  const setInformationField = (
-    field: "fullName" | "phone" | "description",
-    value: string
-  ) => {
-    if (field === "phone") {
-      const digitsOnly = value.replace(/\D/g, "").slice(0, 11)
-
+  const setField = useCallback(
+    (field: EditInformationField, value: string) => {
       setEditForm((prev) => ({
         ...prev,
-        phone: digitsOnly,
+        [field]: value,
       }))
 
       setEditErrors((prev) => ({
         ...prev,
-        phone: "",
+        [field]: undefined,
       }))
-
-      return
-    }
-
-    if (field === "description") {
-      const limitedValue = value.slice(0, 255)
-
-      setEditForm((prev) => ({
-        ...prev,
-        description: limitedValue,
-      }))
-
-      return
-    }
-
-    setEditForm((prev) => ({
-      ...prev,
-      fullName: value,
-    }))
-
-    setEditErrors((prev) => ({
-      ...prev,
-      fullName: "",
-    }))
-  }
-
-  const setAvatar = (file: File | null) => {
-    if (!file) return
-
-    if (avatarPreviewUrlRef.current) {
-      URL.revokeObjectURL(avatarPreviewUrlRef.current)
-      avatarPreviewUrlRef.current = null
-    }
-
-    const previewUrl = URL.createObjectURL(file)
-    avatarPreviewUrlRef.current = previewUrl
-
-    setEditForm((prev) => ({
-      ...prev,
-      avatar: previewUrl,
-    }))
-  }
-
-  const handleUpdateInformation = () => {
-    const nextErrors: EditInformationErrors = {}
-
-    const nextFullName = editForm.fullName.trim()
-    const nextPhone = editForm.phone.trim()
-    const nextDescription = editForm.description.slice(0, 255).trim()
-
-    if (!nextFullName) {
-      nextErrors.fullName = "Không được để trống họ và tên"
-    }
-
-    if (!nextPhone) {
-      nextErrors.phone = "Không được để trống số điện thoại"
-    } else if (nextPhone.length < 10 || nextPhone.length > 11) {
-      nextErrors.phone = "Số điện thoại phải từ 10 đến 11 chữ số"
-    }
-
-    setEditErrors(nextErrors)
-
-    if (Object.keys(nextErrors).length > 0) return
-
-    const nextInformation: InformationData = {
-      ...information,
-      fullName: nextFullName,
-      phone: nextPhone,
-      description: nextDescription,
-      avatar: editForm.avatar,
-    }
-
-    setInformation(nextInformation)
-    setInformationPosts((prev) =>
-      syncInformationIntoPosts(nextInformation, prev)
-    )
-    setEditForm(createInformationForm(nextInformation))
-    setEditOpen(false)
-    setPasswordOpen(false)
-
-    toast.success("Cập nhật thông tin thành công")
-  }
-
-  const setPasswordField = (
-    field: keyof ChangePasswordFormState,
-    value: string
-  ) => {
-    setPasswordForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-
-    setPasswordErrors((prev) => ({
-      ...prev,
-      [field]: "",
-    }))
-  }
-
-  const handleChangePassword = () => {
-    const nextErrors: ChangePasswordErrors = {}
-
-    const oldPassword = passwordForm.oldPassword.trim()
-    const newPassword = passwordForm.newPassword.trim()
-    const confirmPassword = passwordForm.confirmPassword.trim()
-
-    if (!oldPassword) {
-      nextErrors.oldPassword = "Không được bỏ trống mật khẩu cũ"
-    } else if (oldPassword !== information.password) {
-      nextErrors.oldPassword = "Mật khẩu cũ không đúng"
-    }
-
-    if (!newPassword) {
-      nextErrors.newPassword = "Không được bỏ trống mật khẩu mới"
-    } else if (newPassword.length < 6) {
-      nextErrors.newPassword = "Mật khẩu không ít hơn 6 ký tự"
-    } else if (newPassword === oldPassword) {
-      nextErrors.newPassword =
-        "Mật khẩu mới không được giống mật khẩu cũ"
-    }
-
-    if (!confirmPassword) {
-      nextErrors.confirmPassword =
-        "Không được bỏ trống xác nhận mật khẩu"
-    } else if (confirmPassword !== newPassword) {
-      nextErrors.confirmPassword =
-        "Xác nhận mật khẩu không đúng"
-    }
-
-    setPasswordErrors(nextErrors)
-
-    if (Object.keys(nextErrors).length > 0) return
-
-    setInformation((prev) => ({
-      ...prev,
-      password: newPassword,
-    }))
-
-    setPasswordForm(createPasswordForm())
-    setPasswordOpen(false)
-    setEditOpen(false)
-
-    toast.success("Đổi mật khẩu thành công")
-  }
-
-  const passwordStrength = useMemo(
-    () => getPasswordStrength(passwordForm.newPassword.trim()),
-    [passwordForm.newPassword]
+    },
+    []
   )
 
-  const handleToggleLike = (postId: string) => {
-    setInformationPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post
+  const setAvatar = useCallback((file: File | null) => {
+    if (!file) return
 
-        return {
-          ...post,
-          liked: !post.liked,
-          likes: post.liked ? post.likes - 1 : post.likes + 1,
-        }
-      })
-    )
-  }
+    if (draftAvatarRef.current && isObjectUrl(draftAvatarRef.current)) {
+      URL.revokeObjectURL(draftAvatarRef.current)
+    }
 
-  const handleDeletePost = (postId: string) => {
-    setInformationPosts((prev) =>
-      prev.filter((post) => post.id !== postId)
-    )
-  }
+    const url = URL.createObjectURL(file)
+    draftAvatarRef.current = url
 
-  const handleUpdatePost = (postId: string, title: string) => {
-    setInformationPosts((prev) =>
-      prev.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              title,
-            }
-          : post
-      )
-    )
-  }
+    setEditForm((prev) => ({
+      ...prev,
+      avatar: url,
+    }))
+  }, [])
 
-  const handleAddComment = (
-    postId: string,
-    payload: { content: string; file: File | null }
-  ) => {
-    setInformationPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post
+  const setPasswordField = useCallback(
+    (field: keyof ChangePasswordFormState, value: string) => {
+      setPasswordForm((prev) => ({
+        ...prev,
+        [field]: value,
+      }))
 
-        const attachment = payload.file
-          ? buildAttachment(payload.file)
-          : undefined
+      setPasswordErrors((prev) => ({
+        ...prev,
+        [field]: undefined,
+      }))
+    },
+    []
+  )
 
-        return {
-          ...post,
-          comments: [
-            ...post.comments,
-            {
-              id: crypto.randomUUID(),
-              user: viewerUser,
-              content: payload.content,
-              createdAt: "Vừa xong",
-              attachment,
-            },
-          ],
-        }
-      })
-    )
-  }
+  const handlers = useInformationHandlers({
+    editForm,
+    information,
+    passwordForm,
+    isEditDirty,
+    viewerUser,
+    draftAvatarRef,
+    buildEditForm,
+    setInformation,
+    setInformationPosts,
+    setEditErrors,
+    setEditForm,
+    setEditInitialForm,
+    setEditOpen,
+    setPasswordForm,
+    setPasswordErrors,
+    setPasswordOpen,
+  })
 
-  const handleUpdateComment = (
-    postId: string,
-    commentId: string,
-    content: string
-  ) => {
-    setInformationPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post
+  const openPreview = useCallback((src: string) => {
+    setPreviewSrc(src)
+  }, [])
 
-        return {
-          ...post,
-          comments: post.comments.map((comment) =>
-            comment.id === commentId
-              ? { ...comment, content }
-              : comment
-          ),
-        }
-      })
-    )
-  }
-
-  const handleDeleteComment = (
-    postId: string,
-    commentId: string
-  ) => {
-    setInformationPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post
-
-        return {
-          ...post,
-          comments: post.comments.filter(
-            (comment) => comment.id !== commentId
-          ),
-        }
-      })
-    )
-  }
+  const closePreview = useCallback(() => {
+    setPreviewSrc("")
+  }, [])
 
   return {
     information,
     informationPosts,
     viewerUser,
     canEditInformation,
+
     editOpen,
     passwordOpen,
+    previewSrc,
+
     editForm,
     editErrors,
     passwordForm,
     passwordErrors,
     passwordStrength,
-    previewSrc,
+
+    isEditDirty,
+
     openPreview,
     closePreview,
     openEditModal,
     closeEditModal,
     openPasswordModal,
     backToEditModal,
-    closePasswordModal,
-    setInformationField,
+
+    setField,
     setAvatar,
-    handleUpdateInformation,
     setPasswordField,
-    handleChangePassword,
-    handleToggleLike,
-    handleDeletePost,
-    handleUpdatePost,
-    handleAddComment,
-    handleUpdateComment,
-    handleDeleteComment,
+
+    ...handlers,
   }
 }

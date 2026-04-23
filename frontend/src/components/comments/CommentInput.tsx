@@ -80,7 +80,6 @@ const CommentInput = ({
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-3">
-      {/* ROW 1 */}
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
         <Avatar
           src={currentUser.avatar}
@@ -122,7 +121,6 @@ const CommentInput = ({
         </button>
       </div>
 
-      {/* ROW 2 */}
       {file && fileKind && (
         <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-3">
           <div />

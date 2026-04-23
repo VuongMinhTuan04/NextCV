@@ -1,4 +1,5 @@
-import { ArrowLeft, LockKeyhole, X } from "lucide-react"
+import { useMemo, useState } from "react"
+import { ArrowLeft, Eye, EyeOff, LockKeyhole } from "lucide-react"
 
 import type {
   ChangePasswordErrors,
@@ -17,7 +18,63 @@ type Props = {
   ) => void
   onChangePassword: () => void
   onBack: () => void
-  onClose: () => void
+}
+
+const PasswordField = ({
+  label,
+  value,
+  error,
+  placeholder,
+  onChange,
+  visible,
+  onToggleVisible,
+}: {
+  label: string
+  value: string
+  error?: string
+  placeholder: string
+  onChange: (value: string) => void
+  visible: boolean
+  onToggleVisible: () => void
+}) => {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-medium text-slate-700">
+        {label}
+      </label>
+
+      <div
+        className={`flex items-center gap-2 rounded-2xl border px-4 py-3 transition ${
+          error
+            ? "border-rose-300 bg-rose-50/60 focus-within:border-rose-400"
+            : "border-slate-200 bg-white focus-within:border-blue-300"
+        }`}
+      >
+        <input
+          type={visible ? "text" : "password"}
+          value={value}
+          onChange={(event) => onChange(event.target.value.replace(/\s/g, ""))}
+          placeholder={placeholder}
+          className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+        />
+
+        <button
+          type="button"
+          onClick={onToggleVisible}
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+          aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+        >
+          {visible ? (
+            <EyeOff className="h-4.5 w-4.5" />
+          ) : (
+            <Eye className="h-4.5 w-4.5" />
+          )}
+        </button>
+      </div>
+
+      {error && <p className="mt-2 text-sm text-rose-500">{error}</p>}
+    </div>
+  )
 }
 
 const ChangePasswordModal = ({
@@ -28,185 +85,128 @@ const ChangePasswordModal = ({
   onFieldChange,
   onChangePassword,
   onBack,
-  onClose,
 }: Props) => {
+  const [visible, setVisible] = useState({
+    oldPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  })
+
+  const score = useMemo(() => {
+    return Math.max(0, Math.min(strength.score, 3))
+  }, [strength.score])
+
   if (!open) return null
 
-  const strengthBlocks = [
-    {
-      label: "Thấp",
-      active: strength.score >= 1,
-      barClass: "bg-rose-500",
-      boxClass: "border-rose-100 bg-rose-50",
-    },
-    {
-      label: "Trung bình",
-      active: strength.score >= 2,
-      barClass: "bg-amber-500",
-      boxClass: "border-amber-100 bg-amber-50",
-    },
-    {
-      label: "Cao",
-      active: strength.score >= 3,
-      barClass: "bg-emerald-500",
-      boxClass: "border-emerald-100 bg-emerald-50",
-    },
-  ]
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-6 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-2xl overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">
-              Đổi mật khẩu
-            </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Cập nhật mật khẩu mới để tăng độ an toàn cho tài khoản.
-            </p>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/55 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6">
+      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-2xl items-center justify-center">
+        <div
+          className="w-full overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-2xl sm:rounded-[28px]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5">
+            <div className="min-w-0">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-slate-700">
+                  <LockKeyhole className="h-4 w-4" />
+                </span>
+                <span>Đổi mật khẩu</span>
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-slate-500">
+                Cập nhật mật khẩu mới để tăng độ an toàn cho tài khoản.
+              </p>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="grid h-10 w-10 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
-            aria-label="Đóng"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="space-y-4 px-6 py-6">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Mật khẩu cũ
-            </label>
-            <input
-              type="password"
+          <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-6">
+            <PasswordField
+              label="Mật khẩu cũ"
               value={form.oldPassword}
-              onChange={(event) =>
-                onFieldChange("oldPassword", event.target.value)
-              }
+              error={errors.oldPassword}
               placeholder="Nhập mật khẩu cũ"
-              className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${
-                errors.oldPassword
-                  ? "border-rose-300 bg-rose-50 focus:border-rose-500"
-                  : "border-slate-200 bg-white focus:border-blue-300"
-              }`}
-            />
-            {errors.oldPassword && (
-              <p className="mt-2 text-sm text-rose-500">
-                {errors.oldPassword}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Mật khẩu mới
-            </label>
-            <input
-              type="password"
-              value={form.newPassword}
-              onChange={(event) =>
-                onFieldChange("newPassword", event.target.value)
+              visible={visible.oldPassword}
+              onToggleVisible={() =>
+                setVisible((prev) => ({
+                  ...prev,
+                  oldPassword: !prev.oldPassword,
+                }))
               }
-              placeholder="Nhập mật khẩu mới"
-              className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${
-                errors.newPassword
-                  ? "border-rose-300 bg-rose-50 focus:border-rose-500"
-                  : "border-slate-200 bg-white focus:border-blue-300"
-              }`}
+              onChange={(value) => onFieldChange("oldPassword", value)}
             />
-            {errors.newPassword && (
-              <p className="mt-2 text-sm text-rose-500">
-                {errors.newPassword}
-              </p>
-            )}
 
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              {strengthBlocks.map((item) => (
-                <div
-                  key={item.label}
-                  className={`rounded-2xl border px-3 py-3 transition ${
-                    item.active ? item.boxClass : "border-slate-200 bg-slate-50"
-                  }`}
-                >
-                  <div
-                    className={`h-2 rounded-full ${
-                      item.active ? item.barClass : "bg-slate-200"
-                    }`}
-                  />
-                  <p className="mt-2 text-center text-xs font-medium text-slate-600">
-                    {item.label}
-                  </p>
-                </div>
-              ))}
+            <PasswordField
+              label="Mật khẩu mới"
+              value={form.newPassword}
+              error={errors.newPassword}
+              placeholder="Nhập mật khẩu mới"
+              visible={visible.newPassword}
+              onToggleVisible={() =>
+                setVisible((prev) => ({
+                  ...prev,
+                  newPassword: !prev.newPassword,
+                }))
+              }
+              onChange={(value) => onFieldChange("newPassword", value)}
+            />
+
+            <div className="grid grid-cols-3 gap-2">
+              <div
+                className={`h-2 rounded-full ${
+                  score >= 1 ? "bg-rose-500" : "bg-slate-200"
+                }`}
+              />
+              <div
+                className={`h-2 rounded-full ${
+                  score >= 2 ? "bg-amber-500" : "bg-slate-200"
+                }`}
+              />
+              <div
+                className={`h-2 rounded-full ${
+                  score === 3 ? "bg-emerald-500" : "bg-slate-200"
+                }`}
+              />
             </div>
 
-            <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
-              <span>Mật khẩu cần tối thiểu 6 ký tự.</span>
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span>Mật khẩu nên có tối thiểu 6 ký tự.</span>
               <span>{strength.label}</span>
             </div>
-          </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Xác nhận mật khẩu
-            </label>
-            <input
-              type="password"
+            <PasswordField
+              label="Xác nhận mật khẩu"
               value={form.confirmPassword}
-              onChange={(event) =>
-                onFieldChange("confirmPassword", event.target.value)
-              }
+              error={errors.confirmPassword}
               placeholder="Nhập lại mật khẩu mới"
-              className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${
-                errors.confirmPassword
-                  ? "border-rose-300 bg-rose-50 focus:border-rose-500"
-                  : "border-slate-200 bg-white focus:border-blue-300"
-              }`}
+              visible={visible.confirmPassword}
+              onToggleVisible={() =>
+                setVisible((prev) => ({
+                  ...prev,
+                  confirmPassword: !prev.confirmPassword,
+                }))
+              }
+              onChange={(value) => onFieldChange("confirmPassword", value)}
             />
-            {errors.confirmPassword && (
-              <p className="mt-2 text-sm text-rose-500">
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
 
-          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-            <button
-              type="button"
-              onClick={onChangePassword}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
-            >
-              <LockKeyhole className="h-4 w-4" />
-              <span>Đổi mật khẩu</span>
-            </button>
+            <div className="flex flex-col gap-3 pt-1 sm:flex-row">
+              <button
+                type="button"
+                onClick={onChangePassword}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+              >
+                <LockKeyhole className="h-4 w-4" />
+                <span>Đổi mật khẩu</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={onBack}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Quay lại</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
-            >
-              <X className="h-4 w-4" />
-              <span>Đóng</span>
-            </button>
+              <button
+                type="button"
+                onClick={onBack}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Quay lại</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -4,7 +4,6 @@ export type InformationData = {
   fullName: string
   email: string
   phone: string
-  description: string
   about: string
   avatar: string
   password: string
@@ -17,9 +16,8 @@ export const mockInformation: InformationData[] = [
     fullName: "Bee Nguyen",
     email: "bee.nguyen@example.com",
     phone: "0987654321",
-    description: "Frontend Developer yêu thích UI sạch, tối giản và trải nghiệm mượt.",
     about:
-      "Mình tập trung xây dựng giao diện tinh gọn, dễ dùng và có chiều sâu. Mục tiêu của mình là tạo ra sản phẩm vừa đẹp vừa thực tế, có thể mở rộng tốt về sau.",
+      "Tập trung xây dựng giao diện gọn, dễ dùng và mượt. Mục tiêu tạo sản phẩm đẹp, thực tế và dễ mở rộng.",
     avatar: "https://i.pravatar.cc/200?img=13",
     password: "123456",
   },
@@ -29,9 +27,8 @@ export const mockInformation: InformationData[] = [
     fullName: "An Nguyen",
     email: "an.nguyen@example.com",
     phone: "0901234567",
-    description: "UI/UX Designer thích hệ thống thiết kế rõ ràng và tinh gọn.",
     about:
-      "Mình yêu thích cách một sản phẩm truyền tải cảm xúc qua bố cục, màu sắc và chi tiết nhỏ. Mục tiêu là giữ mọi thứ đơn giản nhưng vẫn đủ cảm giác cao cấp.",
+      "Yêu thích UI/UX rõ ràng, tinh gọn. Quan tâm cách sản phẩm truyền tải cảm xúc qua bố cục và màu sắc.",
     avatar: "https://i.pravatar.cc/200?img=1",
     password: "123456",
   },
@@ -41,9 +38,8 @@ export const mockInformation: InformationData[] = [
     fullName: "Bao Le",
     email: "bao.le@example.com",
     phone: "0912345678",
-    description: "Product thinker mê logic sản phẩm và khả năng mở rộng.",
     about:
-      "Mình thích nhìn sản phẩm từ góc độ người dùng, business và khả năng scale lâu dài. Mình ưu tiên sự rõ ràng, hiệu quả và tính bền vững trong từng quyết định.",
+      "Quan tâm logic sản phẩm và khả năng scale. Ưu tiên rõ ràng, hiệu quả và tính bền vững.",
     avatar: "https://i.pravatar.cc/200?img=3",
     password: "123456",
   },

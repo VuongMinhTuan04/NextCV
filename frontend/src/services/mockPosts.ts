@@ -94,4 +94,27 @@ export const initialPosts: PostItem[] = [
       },
     ],
   },
+  {
+    id: "post-3",
+    user: currentUser,
+    title: "Mình vừa deploy thử nghiệm, tốc độ load cải thiện rõ rệt.",
+    createdAt: "1 ngày trước",
+    attachment: {
+      name: "screenshot-speed.png",
+      url: "https://picsum.photos/seed/perf/800/600",
+      kind: "image",
+    },
+    liked: false,
+    likes: 7,
+    comments: [
+      {
+        id: "cmt-4",
+        user: baoLe,
+        content: "Có thể share config cụ thể không?",
+        createdAt: "20 giờ trước",
+      },
+    ],
+  },
 ]
+
+export const mockPosts = initialPosts

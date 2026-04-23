@@ -133,6 +133,7 @@ const CommentItem = ({
                 ) : (
                   <a
                     href={comment.attachment.url}
+                    download={comment.attachment.name}
                     target="_blank"
                     rel="noreferrer"
                     className="flex cursor-pointer items-center gap-3 px-3 py-2 transition hover:bg-slate-100"
