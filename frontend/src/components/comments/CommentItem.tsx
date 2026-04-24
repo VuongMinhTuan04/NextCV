@@ -52,12 +52,12 @@ const CommentItem = ({
     onUpdate(comment.id, nextContent)
     setIsEditing(false)
 
-    toast.success("Sửa bình luận thành công")
+    toast.success("Sửa bình luận thành công", { duration: 1000 })
   }
 
   const handleDelete = () => {
     onDelete(comment.id)
-    toast.success("Xóa bình luận thành công")
+    toast.success("Xóa bình luận thành công", { duration: 1000 })
   }
 
   const handleAvatarClick = () => {
@@ -65,7 +65,7 @@ const CommentItem = ({
   }
 
   return (
-    <div className="flex gap-3 rounded-2xl p-3">
+    <div className="flex gap-3 items-start rounded-2xl p-3">
       <button
         type="button"
         onClick={handleAvatarClick}

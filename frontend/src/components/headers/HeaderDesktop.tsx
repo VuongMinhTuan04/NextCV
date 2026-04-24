@@ -1,5 +1,5 @@
 import { Home, Search } from "lucide-react"
-import { NavLink, useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 
 import type { User } from "../../hooks/headers/useHeaderSearch"
 
@@ -8,6 +8,7 @@ type Props = {
   setSearch: React.Dispatch<React.SetStateAction<string>>
   results: User[]
   mobileSearchOpen: boolean
+  onHomeClick: () => void
 }
 
 const HeaderDesktop = ({
@@ -15,10 +16,11 @@ const HeaderDesktop = ({
   setSearch,
   results,
   mobileSearchOpen,
+  onHomeClick,
 }: Props) => {
   const navigate = useNavigate()
-
-  const navItems = [{ label: "Trang chủ", path: "/", icon: Home }]
+  const location = useLocation()
+  const isHomeActive = location.pathname === "/"
 
   return (
     <>
@@ -35,27 +37,19 @@ const HeaderDesktop = ({
       <div className="hidden flex-1 items-center justify-center gap-4 sm:flex">
         <nav>
           <ul className="flex items-center gap-6">
-            {navItems.map((item) => {
-              const Icon = item.icon
-
-              return (
-                <li key={item.label}>
-                  <NavLink
-                    to={item.path}
-                    className={({ isActive }) =>
-                      `flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition ${
-                        isActive
-                          ? "bg-blue-50 text-blue-600"
-                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-                      }`
-                    }
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </NavLink>
-                </li>
-              )
-            })}
+            <li>
+              <button
+                onClick={onHomeClick}
+                className={`flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition ${
+                  isHomeActive
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+              >
+                <Home className="h-4 w-4" />
+                <span>Trang chủ</span>
+              </button>
+            </li>
           </ul>
         </nav>
 

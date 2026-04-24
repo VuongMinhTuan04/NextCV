@@ -1,5 +1,9 @@
+import { useEffect, useRef } from "react"
+import { Loader2 } from "lucide-react"
+
 import type { PostItem, User } from "../../services/mockPosts"
 import PostCard from "../posts/PostCard"
+import { useInfinitePosts } from "../../hooks/commons/useInfinitePosts"
 
 type Props = {
   posts: PostItem[]
@@ -19,6 +23,8 @@ type Props = {
   ) => void
   onDeleteComment: (postId: string, commentId: string) => void
   onPreviewImage: (src: string) => void
+  highlightPostId?: string
+  highlightCommentId?: string
 }
 
 const InformationPosts = ({
@@ -32,8 +38,19 @@ const InformationPosts = ({
   onUpdateComment,
   onDeleteComment,
   onPreviewImage,
+  highlightPostId,
+  highlightCommentId,
 }: Props) => {
   const userPosts = posts.filter((post) => post.user.id === ownerId)
+  const { visiblePosts, isLoading, observerRef } = useInfinitePosts(userPosts)
+  const postRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+
+  useEffect(() => {
+    if (highlightPostId && postRefs.current.has(highlightPostId)) {
+      const el = postRefs.current.get(highlightPostId)
+      el?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }
+  }, [highlightPostId, userPosts])
 
   return (
     <section className="space-y-4 lg:max-w-3xl lg:mx-auto">
@@ -52,21 +69,30 @@ const InformationPosts = ({
         </span>
       </div>
 
-      {userPosts.length > 0 ? (
+      {visiblePosts.length > 0 ? (
         <div className="space-y-3 sm:space-y-4">
-          {userPosts.map((post) => (
-            <PostCard
+          {visiblePosts.map((post) => (
+            <div
               key={post.id}
-              post={post}
-              currentUser={currentUser}
-              onToggleLike={onToggleLike}
-              onDeletePost={onDeletePost}
-              onUpdatePost={onUpdatePost}
-              onAddComment={onAddComment}
-              onUpdateComment={onUpdateComment}
-              onDeleteComment={onDeleteComment}
-              onPreviewImage={onPreviewImage}
-            />
+              ref={(el) => {
+                if (el) postRefs.current.set(post.id, el)
+                else postRefs.current.delete(post.id)
+              }}
+            >
+              <PostCard
+                post={post}
+                currentUser={currentUser}
+                onToggleLike={onToggleLike}
+                onDeletePost={onDeletePost}
+                onUpdatePost={onUpdatePost}
+                onAddComment={onAddComment}
+                onUpdateComment={onUpdateComment}
+                onDeleteComment={onDeleteComment}
+                onPreviewImage={onPreviewImage}
+                initialCommentOpen={post.id === highlightPostId && !!highlightCommentId}
+                highlightCommentId={highlightCommentId}
+              />
+            </div>
           ))}
         </div>
       ) : (
@@ -79,6 +105,12 @@ const InformationPosts = ({
           </p>
         </div>
       )}
+
+      <div ref={observerRef} className="flex justify-center py-4">
+        {isLoading && (
+          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+        )}
+      </div>
     </section>
   )
 }

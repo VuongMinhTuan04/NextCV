@@ -1,5 +1,6 @@
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from "react"
 import { toast } from "sonner"
+import { pushNotification } from "../notifications/useNotifications"
 
 import type { InformationData } from "../../services/mockInformation"
 import type { PostItem, User } from "../../services/mockPosts"
@@ -144,8 +145,8 @@ export const useInformationHandlers = ({
   ])
 
   const handleToggleLike = useCallback((postId: string) => {
-    setInformationPosts((prev) =>
-      prev.map((post) => {
+    setInformationPosts((prev) => {
+      const nextPosts = prev.map((post) => {
         if (String(post.id) !== String(postId)) return post
 
         const wasLiked = post.liked
@@ -157,14 +158,32 @@ export const useInformationHandlers = ({
           likes: wasLiked ? Math.max(0, currentLikes - 1) : currentLikes + 1,
         } as PostItem
       })
-    )
-  }, [setInformationPosts])
+
+      const targetPost = prev.find(p => String(p.id) === String(postId))
+      if (targetPost && !targetPost.liked && viewerUser.id !== targetPost.user.id) {
+        pushNotification({
+          type: "like",
+          actor: {
+            id: viewerUser.id,
+            fullName: viewerUser.fullName,
+            avatar: viewerUser.avatar,
+          },
+          receiverId: targetPost.user.id,
+          postId: targetPost.id,
+          postTitle: targetPost.title || targetPost.user.fullName,
+          actionText: "đã thích bài viết của bạn",
+        })
+      }
+
+      return nextPosts
+    })
+  }, [viewerUser])
 
   const handleDeletePost = useCallback((postId: string) => {
     setInformationPosts((prev) =>
       prev.filter((post) => String(post.id) !== String(postId))
     )
-  }, [setInformationPosts])
+  }, [])
 
   const handleUpdatePost = useCallback((postId: string, title: string) => {
     setInformationPosts((prev) =>
@@ -173,12 +192,12 @@ export const useInformationHandlers = ({
         return { ...post, title } as PostItem
       })
     )
-  }, [setInformationPosts])
+  }, [])
 
   const handleAddComment = useCallback(
     (postId: string, payload: { content: string; file: File | null }) => {
-      setInformationPosts((prev) =>
-        prev.map((post) => {
+      setInformationPosts((prev) => {
+        const nextPosts = prev.map((post) => {
           if (String(post.id) !== String(postId)) return post
 
           const currentComments = Array.isArray((post as PostLikeShape).comments)
@@ -210,9 +229,29 @@ export const useInformationHandlers = ({
             comments: [...currentComments, nextComment],
           } as PostItem
         })
-      )
+
+        const targetPost = prev.find(p => String(p.id) === String(postId))
+        if (targetPost && viewerUser.id !== targetPost.user.id) {
+          pushNotification({
+            type: "comment",
+            actor: {
+              id: viewerUser.id,
+              fullName: viewerUser.fullName,
+              avatar: viewerUser.avatar,
+            },
+            receiverId: targetPost.user.id,
+            postId: targetPost.id,
+            commentId: undefined,
+            postTitle: targetPost.title || targetPost.user.fullName,
+            commentPreview: payload.content.substring(0, 100),
+            actionText: "đã bình luận về bài viết của bạn",
+          })
+        }
+
+        return nextPosts
+      })
     },
-    [setInformationPosts, viewerUser]
+    [viewerUser]
   )
 
   const handleUpdateComment = useCallback(
@@ -236,7 +275,7 @@ export const useInformationHandlers = ({
         })
       )
     },
-    [setInformationPosts]
+    []
   )
 
   const handleDeleteComment = useCallback((postId: string, commentId: string) => {
@@ -264,7 +303,7 @@ export const useInformationHandlers = ({
         } as PostItem
       })
     )
-  }, [setInformationPosts])
+  }, [])
 
   return {
     handleUpdateInformation,

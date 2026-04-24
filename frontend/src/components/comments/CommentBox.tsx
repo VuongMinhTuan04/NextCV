@@ -43,7 +43,7 @@ const CommentBox = ({
     })
 
     reset()
-    toast.success("Bình luận thành công")
+    toast.success("Bình luận thành công", { duration: 1000 })
   }
 
   return (

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import type { PostItem, User } from "../../services/mockPosts"
 import { usePostActions } from "../../hooks/posts/usePostActions"
@@ -17,6 +17,9 @@ type Props = {
   onUpdateComment: (postId: string, commentId: string, content: string) => void
   onDeleteComment: (postId: string, commentId: string) => void
   onPreviewImage: (src: string) => void
+  initialCommentOpen?: boolean
+  highlightCommentId?: string
+  isHighlighted?: boolean
 }
 
 const PostCard = ({
@@ -29,8 +32,17 @@ const PostCard = ({
   onUpdateComment,
   onDeleteComment,
   onPreviewImage,
+  initialCommentOpen = false,
+  highlightCommentId,
+  isHighlighted = false,
 }: Props) => {
-  const [isCommentOpen, setIsCommentOpen] = useState(false)
+  const [isCommentOpen, setIsCommentOpen] = useState(initialCommentOpen)
+
+  useEffect(() => {
+    if (initialCommentOpen) {
+      setIsCommentOpen(true)
+    }
+  }, [initialCommentOpen])
 
   const {
     isEditing,
@@ -73,7 +85,11 @@ const PostCard = ({
   const canManage = post.user.id === currentUser.id
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <article
+      className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-500 ${
+        isHighlighted ? "ring-2 ring-blue-300 scale-[1.01]" : ""
+      }`}
+    >
       <PostHeader
         post={post}
         canManage={canManage}

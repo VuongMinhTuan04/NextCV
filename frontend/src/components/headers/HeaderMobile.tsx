@@ -1,6 +1,6 @@
 import { Home, Search, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { NavLink } from "react-router-dom"
+import { useLocation } from "react-router-dom"
 
 import type { User } from "../../hooks/headers/useHeaderSearch"
 
@@ -13,6 +13,7 @@ type Props = {
   mobileSearchRef: React.RefObject<HTMLDivElement | null>
   mobileSearchInputRef: React.RefObject<HTMLInputElement | null>
   closeMobileSearch: () => void
+  onHomeClick: () => void
 }
 
 const HeaderMobile = ({
@@ -23,7 +24,11 @@ const HeaderMobile = ({
   mobileSearchRef,
   mobileSearchInputRef,
   closeMobileSearch,
+  onHomeClick,
 }: Props) => {
+  const location = useLocation()
+  const isHomeActive = location.pathname === "/"
+
   return (
     <div
       ref={mobileSearchRef}
@@ -39,18 +44,16 @@ const HeaderMobile = ({
             transition={{ duration: 0.18 }}
             className="flex items-center justify-center gap-6"
           >
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                `grid h-10 w-10 place-items-center rounded-full transition ${
-                  isActive
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-                }`
-              }
+            <button
+              onClick={onHomeClick}
+              className={`grid h-10 w-10 place-items-center rounded-full transition ${
+                isHomeActive
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+              }`}
             >
               <Home className="h-5 w-5" />
-            </NavLink>
+            </button>
 
             <button
               type="button"

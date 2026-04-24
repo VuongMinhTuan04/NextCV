@@ -43,12 +43,29 @@ const baoLe: User = {
   avatar: "https://i.pravatar.cc/100?img=3",
 }
 
-export const initialPosts: PostItem[] = [
+const randomComments = (postId: string, users: User[]): CommentItem[] => {
+  const count = Math.floor(Math.random() * 3) + 1
+  return Array.from({ length: count }, (_, i) => ({
+    id: `${postId}-cmt-${i}`,
+    user: users[Math.floor(Math.random() * users.length)],
+    content: [
+      "Bài viết hay quá!",
+      "Cảm ơn bạn đã chia sẻ",
+      "Rất hữu ích, mình sẽ áp dụng thử",
+      "Cho mình hỏi thêm về phần này được không?",
+      "Tuyệt vời!",
+    ][Math.floor(Math.random() * 5)],
+    createdAt: `${Math.floor(Math.random() * 10) + 1} giờ trước`,
+  }))
+}
+
+const users = [currentUser, anNguyen, baoLe]
+
+const basePosts: PostItem[] = [
   {
     id: "post-1",
     user: currentUser,
-    title:
-      "Mình đang build giao diện NextCV, tập trung vào clean UI và trải nghiệm mượt hơn.",
+    title: "Mình đang build giao diện NextCV, tập trung vào clean UI và trải nghiệm mượt hơn.",
     createdAt: "2 giờ trước",
     attachment: {
       name: "preview-design.png",
@@ -75,8 +92,7 @@ export const initialPosts: PostItem[] = [
   {
     id: "post-2",
     user: anNguyen,
-    title:
-      "Mình vừa up file tài liệu demo, click vào sẽ mở PDF bằng trình duyệt mặc định.",
+    title: "Mình vừa up file tài liệu demo, click vào sẽ mở PDF bằng trình duyệt mặc định.",
     createdAt: "5 giờ trước",
     attachment: {
       name: "demo-document.pdf",
@@ -116,5 +132,42 @@ export const initialPosts: PostItem[] = [
     ],
   },
 ]
+
+const additionalPosts: PostItem[] = Array.from({ length: 12 }, (_, i) => {
+  const user = users[i % users.length]
+  const postId = `post-${i + 4}`
+  const attachmentKinds = ["image", "pdf"] as const
+  const kind = attachmentKinds[i % attachmentKinds.length]
+  const attachment: Attachment | undefined =
+    kind === "image"
+      ? { name: `image-${i}.jpg`, url: `https://picsum.photos/seed/post${i + 4}/800/600`, kind: "image" }
+      : { name: `document-${i}.pdf`, url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", kind: "pdf" }
+
+  return {
+    id: postId,
+    user,
+    title: [
+      "Chia sẻ kinh nghiệm phỏng vấn React",
+      "Một vài mẹo tối ưu Tailwind CSS",
+      "Hành trình học TypeScript của mình",
+      "Cách mình tổ chức component trong dự án lớn",
+      "Làm sao để viết CSS sạch hơn",
+      "Review khóa học Next.js trên Udemy",
+      "Mình vừa hoàn thành portfolio cá nhân",
+      "Những sai lầm khi mới học React",
+      "So sánh Zustand và Redux Toolkit",
+      "Kinh nghiệm deploy ứng dụng lên Vercel",
+      "Cách sử dụng React Query hiệu quả",
+      "Tản mạn về nghề lập trình viên",
+    ][i % 12],
+    createdAt: `${i + 2} ngày trước`,
+    attachment,
+    liked: Math.random() > 0.5,
+    likes: Math.floor(Math.random() * 50) + 1,
+    comments: randomComments(postId, users),
+  }
+})
+
+export const initialPosts: PostItem[] = [...basePosts, ...additionalPosts]
 
 export const mockPosts = initialPosts

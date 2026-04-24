@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useParams, useSearchParams } from "react-router-dom"
 import { Toaster } from "sonner"
 
 import InformationCard from "../components/informations/InformationCard"
@@ -10,6 +10,10 @@ import { useInformationPage } from "../hooks/informations/useInformationPage"
 
 const Information = () => {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+
+  const highlightPostId = searchParams.get("postId") || undefined
+  const highlightCommentId = searchParams.get("commentId") || undefined
 
   const {
     information,
@@ -67,6 +71,8 @@ const Information = () => {
           onUpdateComment={handleUpdateComment}
           onDeleteComment={handleDeleteComment}
           onPreviewImage={openPreview}
+          highlightPostId={highlightPostId}
+          highlightCommentId={highlightCommentId}
         />
 
         {canEditInformation && (

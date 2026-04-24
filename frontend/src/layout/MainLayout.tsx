@@ -1,5 +1,4 @@
 import { Outlet } from "react-router"
-
 import Header from "./Header"
 
 type Props = {
@@ -8,10 +7,9 @@ type Props = {
 
 const MainLayout = ({ children }: Props) => {
   return (
-    <div className="min-h-screen bg-[#EFF1F3]">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
       <Header />
-
-      <main className="pt-16 pb-6 sm:pt-18 lg:pt-20">
+      <main className="pt-14 pb-2 sm:pt-16 lg:pt-18">
         <div className="mx-auto w-full max-w-7xl">
           {children ? children : <Outlet />}
         </div>

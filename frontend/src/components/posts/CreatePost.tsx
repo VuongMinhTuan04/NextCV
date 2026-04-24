@@ -143,7 +143,7 @@ const CreatePost = ({
       fileInputRef.current.value = ""
     }
 
-    toast.success("Đăng bài thành công")
+    toast.success("Đăng bài thành công", { duration: 1000 })
   }
 
   const handleAvatarClick = () => {

@@ -23,7 +23,7 @@ const PostMedia = ({
       <button type="button" onClick={() => onPreviewImage(attachment.url)} className="mt-4 block w-full cursor-pointer
         overflow-hidden rounded-2xl border border-cyan-100 bg-cyan-50 transition hover:opacity-95"
       >
-        <img src={attachment.url} alt={attachment.name} className="h-auto w-full object-cover" />
+        <img src={attachment.url} alt={attachment.name} className="h-auto max-h-96 w-full object-cover" />
       </button>
     )
   }

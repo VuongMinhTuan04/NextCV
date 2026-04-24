@@ -1,13 +1,16 @@
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 
 import HeaderDesktop from "../components/headers/HeaderDesktop"
 import HeaderMobile from "../components/headers/HeaderMobile"
 import HeaderRight from "../components/headers/HeaderRight"
 import MobileSearchResult from "../components/headers/MobileSearchResult"
 import { useHeaderSearch } from "../hooks/headers/useHeaderSearch"
+import { useNotifications } from "../hooks/notifications/useNotifications"
+import { currentUser } from "../services/mockPosts"
 
 const Header = () => {
   const navigate = useNavigate()
+  const location = useLocation()
 
   const {
     search,
@@ -20,9 +23,19 @@ const Header = () => {
     closeMobileSearch,
   } = useHeaderSearch()
 
+  const { unreadCount } = useNotifications(currentUser.id)
+
   const handleSelectUser = (userId: string) => {
     navigate(`/information/${userId}`)
     closeMobileSearch()
+  }
+
+  const handleHomeClick = () => {
+    if (location.pathname === "/") {
+      window.location.reload()
+    } else {
+      navigate("/")
+    }
   }
 
   return (
@@ -33,6 +46,7 @@ const Header = () => {
           setSearch={setSearch}
           results={results}
           mobileSearchOpen={mobileSearchOpen}
+          onHomeClick={handleHomeClick}
         />
 
         <HeaderMobile
@@ -44,9 +58,10 @@ const Header = () => {
           mobileSearchRef={mobileSearchRef}
           mobileSearchInputRef={mobileSearchInputRef}
           closeMobileSearch={closeMobileSearch}
+          onHomeClick={handleHomeClick}
         />
 
-        <HeaderRight mobileSearchOpen={mobileSearchOpen} />
+        <HeaderRight mobileSearchOpen={mobileSearchOpen} unreadCount={unreadCount} />
       </div>
 
       <MobileSearchResult
