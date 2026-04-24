@@ -17,6 +17,7 @@ type Props = {
   onSaveEdit: () => void
   onCancelEdit: () => void
   onDeletePost: () => void
+  isAuthenticated?: boolean
 }
 
 const PostHeader = ({
@@ -29,11 +30,26 @@ const PostHeader = ({
   onSaveEdit,
   onCancelEdit,
   onDeletePost,
+  isAuthenticated = false,
 }: Props) => {
   const navigate = useNavigate()
 
   const handleAvatarClick = () => {
-    navigate(`/information/${post.user.id}`)
+    if (!isAuthenticated) {
+      navigate(`/signin?redirect=${encodeURIComponent(`/information/${post.user.id}`)}`)
+    } else {
+      navigate(`/information/${post.user.id}`)
+    }
+  }
+
+  const handleSave = () => {
+    onSaveEdit()
+    toast.success("Cập nhật bài viết thành công", { duration: 1000 })
+  }
+
+  const handleDelete = () => {
+    onDeletePost()
+    toast.success("Xóa bài viết thành công", { duration: 1000 })
   }
 
   return (
@@ -76,10 +92,7 @@ const PostHeader = ({
 
               <button
                 type="button"
-                onClick={() => {
-                  onSaveEdit()
-                  toast.success("Cập nhật bài viết thành công", { duration: 1000 })
-                }}
+                onClick={handleSave}
                 disabled={draftTitle.trim().length === 0}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                   draftTitle.trim().length > 0
@@ -111,10 +124,7 @@ const PostHeader = ({
               {
                 label: "Xóa bài viết",
                 icon: Trash2,
-                onClick: () => {
-                  onDeletePost()
-                  toast.success("Xóa bài viết thành công", { duration: 1000 })
-                },
+                onClick: handleDelete,
                 destructive: true,
               },
             ]}

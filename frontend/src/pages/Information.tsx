@@ -1,4 +1,5 @@
-import { useParams, useSearchParams } from "react-router-dom"
+import { useEffect } from "react"
+import { useParams, useSearchParams, useNavigate } from "react-router-dom"
 import { Toaster } from "sonner"
 
 import InformationCard from "../components/informations/InformationCard"
@@ -7,10 +8,19 @@ import EditInformation from "../components/informations/EditInformation"
 import ChangePasswordModal from "../components/informations/ChangePasswordModal"
 import ImagePreviewModal from "../components/modals/ImagePreviewModal"
 import { useInformationPage } from "../hooks/informations/useInformationPage"
+import { useAuth } from "../contexts/AuthContext"
 
 const Information = () => {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const { logout, currentUser: loggedInUser, isAuthenticated } = useAuth()
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate(`/signin?redirect=${encodeURIComponent(window.location.pathname)}`, { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   const highlightPostId = searchParams.get("postId") || undefined
   const highlightCommentId = searchParams.get("commentId") || undefined
@@ -48,6 +58,8 @@ const Information = () => {
     isEditDirty,
   } = useInformationPage(id)
 
+  if (!isAuthenticated) return null
+
   return (
     <>
       <Toaster position="top-right" richColors />
@@ -58,6 +70,7 @@ const Information = () => {
           canEditInformation={canEditInformation}
           onEditInformation={openEditModal}
           onPreviewImage={openPreview}
+          onLogout={logout}
         />
 
         <InformationPosts
@@ -73,6 +86,7 @@ const Information = () => {
           onPreviewImage={openPreview}
           highlightPostId={highlightPostId}
           highlightCommentId={highlightCommentId}
+          isAuthenticated={isAuthenticated}
         />
 
         {canEditInformation && (

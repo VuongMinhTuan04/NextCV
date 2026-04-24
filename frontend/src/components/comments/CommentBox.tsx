@@ -12,6 +12,7 @@ type Props = {
   onUpdateComment: (commentId: string, content: string) => void
   onDeleteComment: (commentId: string) => void
   onPreviewImage: (src: string) => void
+  isAuthenticated?: boolean
 }
 
 const CommentBox = ({
@@ -21,6 +22,7 @@ const CommentBox = ({
   onUpdateComment,
   onDeleteComment,
   onPreviewImage,
+  isAuthenticated = false,
 }: Props) => {
   const {
     content,
@@ -63,18 +65,20 @@ const CommentBox = ({
         </div>
       )}
 
-      <CommentInput
-        currentUser={currentUser}
-        value={content}
-        file={file}
-        fileName={fileName}
-        fileKind={fileKind}
-        canSend={canSend}
-        onChange={setContent}
-        onSelectFile={selectFile}
-        onRemoveFile={removeFile}
-        onSend={handleSend}
-      />
+      {isAuthenticated && (
+        <CommentInput
+          currentUser={currentUser}
+          value={content}
+          file={file}
+          fileName={fileName}
+          fileKind={fileKind}
+          canSend={canSend}
+          onChange={setContent}
+          onSelectFile={selectFile}
+          onRemoveFile={removeFile}
+          onSend={handleSend}
+        />
+      )}
     </div>
   )
 }

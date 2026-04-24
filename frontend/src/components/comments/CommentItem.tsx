@@ -7,6 +7,7 @@ import {
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "../../contexts/AuthContext"
 
 import type {
   CommentItem as CommentType,
@@ -34,6 +35,7 @@ const CommentItem = ({
 }: Props) => {
   const isMine = comment.user.id === currentUser.id
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
 
   const [isEditing, setIsEditing] = useState(false)
   const [draftContent, setDraftContent] = useState(comment.content)
@@ -61,7 +63,11 @@ const CommentItem = ({
   }
 
   const handleAvatarClick = () => {
-    navigate(`/information/${comment.user.id}`)
+    if (!isAuthenticated) {
+      navigate(`/signin?redirect=${encodeURIComponent(`/information/${comment.user.id}`)}`)
+    } else {
+      navigate(`/information/${comment.user.id}`)
+    }
   }
 
   return (

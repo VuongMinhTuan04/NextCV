@@ -1,14 +1,22 @@
+import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Bell, Heart, MessageCircle } from "lucide-react"
 
-import { currentUser } from "../services/mockPosts"
+import { useAuth } from "../contexts/AuthContext"
 import { useNotifications } from "../hooks/notifications/useNotifications"
 
 const Notification = () => {
   const navigate = useNavigate()
+  const { currentUser, isAuthenticated } = useAuth()
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/signin", { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   const { notifications, unreadCount, markAsRead, markAllAsRead } =
-    useNotifications(currentUser.id)
+    useNotifications(currentUser?.id)
 
   const handleOpenPost = (
     notificationId: string,
@@ -20,6 +28,8 @@ const Notification = () => {
     const query = `postId=${postId}${commentId ? `&commentId=${commentId}` : ""}`
     navigate(`/?${query}`)
   }
+
+  if (!isAuthenticated) return null
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">

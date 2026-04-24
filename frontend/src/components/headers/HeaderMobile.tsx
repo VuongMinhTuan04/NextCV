@@ -1,6 +1,7 @@
 import { Home, Search, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLocation } from "react-router-dom"
+import { useAuth } from "../../contexts/AuthContext"
 
 import type { User } from "../../hooks/headers/useHeaderSearch"
 
@@ -28,6 +29,7 @@ const HeaderMobile = ({
 }: Props) => {
   const location = useLocation()
   const isHomeActive = location.pathname === "/"
+  const { isAuthenticated } = useAuth()
 
   return (
     <div

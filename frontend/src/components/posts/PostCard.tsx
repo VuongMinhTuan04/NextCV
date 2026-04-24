@@ -20,6 +20,7 @@ type Props = {
   initialCommentOpen?: boolean
   highlightCommentId?: string
   isHighlighted?: boolean
+  isAuthenticated?: boolean
 }
 
 const PostCard = ({
@@ -35,6 +36,7 @@ const PostCard = ({
   initialCommentOpen = false,
   highlightCommentId,
   isHighlighted = false,
+  isAuthenticated = false,
 }: Props) => {
   const [isCommentOpen, setIsCommentOpen] = useState(initialCommentOpen)
 
@@ -70,6 +72,7 @@ const PostCard = ({
   }
 
   const handleAddComment = (payload: { content: string; file: File | null }) => {
+    if (!isAuthenticated) return
     onAddComment(post.id, payload)
     setIsCommentOpen(true)
   }
@@ -100,6 +103,7 @@ const PostCard = ({
         onSaveEdit={handleSaveEdit}
         onCancelEdit={cancelEdit}
         onDeletePost={handleDeletePost}
+        isAuthenticated={isAuthenticated}
       />
 
       <PostMedia attachment={post.attachment} onPreviewImage={onPreviewImage} />
@@ -111,6 +115,7 @@ const PostCard = ({
         isCommentOpen={isCommentOpen}
         onToggleLike={() => onToggleLike(post.id)}
         onToggleComment={() => setIsCommentOpen((prev) => !prev)}
+        isAuthenticated={isAuthenticated}
       />
 
       {isCommentOpen && (
@@ -121,6 +126,7 @@ const PostCard = ({
           onUpdateComment={handleUpdateComment}
           onDeleteComment={handleDeleteComment}
           onPreviewImage={onPreviewImage}
+          isAuthenticated={isAuthenticated}
         />
       )}
     </article>

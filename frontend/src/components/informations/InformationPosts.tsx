@@ -25,6 +25,7 @@ type Props = {
   onPreviewImage: (src: string) => void
   highlightPostId?: string
   highlightCommentId?: string
+  isAuthenticated?: boolean
 }
 
 const InformationPosts = ({
@@ -40,6 +41,7 @@ const InformationPosts = ({
   onPreviewImage,
   highlightPostId,
   highlightCommentId,
+  isAuthenticated = false,
 }: Props) => {
   const userPosts = posts.filter((post) => post.user.id === ownerId)
   const { visiblePosts, isLoading, observerRef } = useInfinitePosts(userPosts)
@@ -91,6 +93,7 @@ const InformationPosts = ({
                 onPreviewImage={onPreviewImage}
                 initialCommentOpen={post.id === highlightPostId && !!highlightCommentId}
                 highlightCommentId={highlightCommentId}
+                isAuthenticated={isAuthenticated}
               />
             </div>
           ))}

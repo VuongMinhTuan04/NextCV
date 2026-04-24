@@ -1,5 +1,6 @@
 import { Home, Search } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
+import { useAuth } from "../../contexts/AuthContext"
 
 import type { User } from "../../hooks/headers/useHeaderSearch"
 
@@ -21,6 +22,16 @@ const HeaderDesktop = ({
   const navigate = useNavigate()
   const location = useLocation()
   const isHomeActive = location.pathname === "/"
+  const { isAuthenticated } = useAuth()
+
+  const handleUserClick = (userId: string) => {
+    setSearch("")
+    if (isAuthenticated) {
+      navigate(`/information/${userId}`)
+    } else {
+      navigate(`/signin?redirect=${encodeURIComponent(`/information/${userId}`)}`)
+    }
+  }
 
   return (
     <>
@@ -69,10 +80,7 @@ const HeaderDesktop = ({
                 {results.map((user) => (
                   <li
                     key={user.id}
-                    onClick={() => {
-                      navigate(`/information/${user.id}`)
-                      setSearch("")
-                    }}
+                    onClick={() => handleUserClick(user.id)}
                     className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-slate-100"
                   >
                     <img

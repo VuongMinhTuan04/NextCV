@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "../../contexts/AuthContext"
 
 import type { User } from "../../services/mockPosts"
 import type { AttachmentKind } from "../../utils/file"
@@ -94,6 +95,7 @@ const CreatePost = ({
   const fileInputRef =
     useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
 
   const {
     title,
@@ -106,6 +108,8 @@ const CreatePost = ({
     removeFile,
     reset,
   } = useCreatePost()
+
+  if (!isAuthenticated) return null
 
   const openFilePicker = () => {
     fileInputRef.current?.click()

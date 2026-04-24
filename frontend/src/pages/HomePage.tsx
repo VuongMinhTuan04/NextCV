@@ -5,10 +5,11 @@ import { Loader2 } from "lucide-react"
 import CreatePost from "../components/posts/CreatePost"
 import PostCard from "../components/posts/PostCard"
 import ImagePreviewModal from "../components/modals/ImagePreviewModal"
-import { currentUser, initialPosts, type PostItem } from "../services/mockPosts"
+import { initialPosts, type PostItem } from "../services/mockPosts"
 import { buildAttachment } from "../utils/file"
 import { useImagePreview } from "../hooks/commons/useImagePreview"
 import { useInfinitePosts } from "../hooks/commons/useInfinitePosts"
+import { useAuth } from "../contexts/AuthContext"
 
 const HomePage = () => {
   const [posts, setPosts] = useState<PostItem[]>(initialPosts)
@@ -16,6 +17,10 @@ const HomePage = () => {
   const highlightPostId = searchParams.get("postId")
   const highlightCommentId = searchParams.get("commentId")
   const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null)
+  const { currentUser, isAuthenticated } = useAuth()
+
+  const activeUser = isAuthenticated && currentUser ? currentUser : null
+  const fallbackUser = activeUser || { id: "", fullName: "", avatar: "" }
 
   const { visiblePosts, isLoading, observerRef } = useInfinitePosts(posts)
 
@@ -49,10 +54,11 @@ const HomePage = () => {
   const { previewSrc, openPreview, closePreview } = useImagePreview()
 
   const handleCreatePost = ({ title, file }: { title: string; file: File }) => {
+    if (!activeUser) return
     const attachment = buildAttachment(file)
     const newPost: PostItem = {
       id: crypto.randomUUID(),
-      user: currentUser,
+      user: activeUser,
       title,
       createdAt: "Vừa xong",
       attachment,
@@ -64,6 +70,7 @@ const HomePage = () => {
   }
 
   const handleToggleLike = (postId: string) => {
+    if (!activeUser) return
     setPosts((prev) =>
       prev.map((post) =>
         post.id !== postId
@@ -84,6 +91,7 @@ const HomePage = () => {
   }
 
   const handleAddComment = (postId: string, payload: { content: string; file: File | null }) => {
+    if (!activeUser) return
     setPosts((prev) =>
       prev.map((post) => {
         if (post.id !== postId) return post
@@ -94,7 +102,7 @@ const HomePage = () => {
             ...post.comments,
             {
               id: crypto.randomUUID(),
-              user: currentUser,
+              user: activeUser,
               content: payload.content,
               createdAt: "Vừa xong",
               attachment,
@@ -132,7 +140,7 @@ const HomePage = () => {
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 px-4 pt-0 pb-2 sm:px-6 lg:py-4">
-      <CreatePost currentUser={currentUser} onCreatePost={handleCreatePost} />
+      {activeUser && <CreatePost currentUser={activeUser} onCreatePost={handleCreatePost} />}
 
       {visiblePosts.length > 0 ? (
         <div className="space-y-4">
@@ -140,7 +148,7 @@ const HomePage = () => {
             <div key={post.id} id={`post-${post.id}`}>
               <PostCard
                 post={post}
-                currentUser={currentUser}
+                currentUser={fallbackUser}
                 onToggleLike={handleToggleLike}
                 onDeletePost={handleDeletePost}
                 onUpdatePost={handleUpdatePost}
@@ -151,6 +159,7 @@ const HomePage = () => {
                 initialCommentOpen={post.id === highlightPostId && !!highlightCommentId}
                 highlightCommentId={highlightCommentId || undefined}
                 isHighlighted={highlightedPostId === post.id}
+                isAuthenticated={isAuthenticated}
               />
             </div>
           ))}

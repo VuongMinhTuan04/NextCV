@@ -1,4 +1,4 @@
-import { Mail, Phone, PencilLine } from "lucide-react"
+import { LogOut, Mail, Phone, PencilLine } from "lucide-react"
 
 import type { InformationData } from "../../services/mockInformation"
 import Avatar from "../commons/Avatar"
@@ -8,6 +8,7 @@ type Props = {
   canEditInformation: boolean
   onEditInformation: () => void
   onPreviewImage: (src: string) => void
+  onLogout?: () => void
 }
 
 const InformationCard = ({
@@ -15,24 +16,36 @@ const InformationCard = ({
   canEditInformation,
   onEditInformation,
   onPreviewImage,
+  onLogout,
 }: Props) => {
   return (
     <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm lg:max-w-3xl lg:mx-auto">
       <div className="bg-gradient-to-br from-white to-slate-50 px-4 py-4 sm:px-6 sm:py-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-1 items-start gap-4 sm:items-center sm:gap-5">
-            <button
-              type="button"
-              onClick={() => onPreviewImage(information.avatar)}
-              className="shrink-0 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 p-1 shadow-sm cursor-pointer transition hover:opacity-80"
-            >
-              <Avatar
-                src={information.avatar}
-                alt={information.fullName}
-                size="lg"
-                className="h-20 w-20 border-4 border-white text-xl shadow-lg sm:h-24 sm:w-24"
-              />
-            </button>
+            <div className="shrink-0 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onPreviewImage(information.avatar)}
+                className="shrink-0 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 p-1 shadow-sm cursor-pointer transition hover:opacity-80"
+              >
+                <Avatar
+                  src={information.avatar}
+                  alt={information.fullName}
+                  size="lg"
+                  className="h-20 w-20 border-4 border-white text-xl shadow-lg sm:h-24 sm:w-24"
+                />
+              </button>
+              {canEditInformation && onLogout && (
+                <button
+                  onClick={onLogout}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  Đăng xuất
+                </button>
+              )}
+            </div>
 
             <div className="min-w-0 space-y-3 pt-1 sm:pt-0">
               <div className="space-y-1">
