@@ -5,29 +5,139 @@ import User from "../models/User";
 import { deleteFileFromCloudinary, getFileType, uploadFileToCloudinary } from "../utils/file.util";
 import { createNotificationService, deleteNotificationByActionService } from "./notification.service";
 
-export const getAllPostService = async (page: number, limit: number) => {
-    const skip = (page - 1) * limit;
-
-    return await Post.find()
-        .populate("userId", "fullname avatar")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
+type PostClientShape = {
+    id: string
+    user: {
+        id: string
+        fullName: string
+        avatar: string
+    }
+    title: string
+    createdAt: string
+    attachment: {
+        name: string
+        url: string
+        kind: "image" | "pdf" | "word"
+    }
+    liked: boolean
+    likes: number
+    comments: []
 }
 
-export const createPostService = async (data: IPost, file: Express.Multer.File, userId: string) => {
-    const { title } = data;
+const formatRelativeTime = (value: Date | string) => {
+    const date = new Date(value);
+    const diff = Date.now() - date.getTime();
 
-    const uploadedFile = await uploadFileToCloudinary(file, "posts");
+    if (Number.isNaN(date.getTime()) || diff < 0) {
+        return "Vừa xong";
+    }
 
-    return await Post.create({
+    const minute = 60 * 1000;
+    const hour = 60 * minute;
+    const day = 24 * hour;
+
+    if (diff < minute) {
+        return "Vừa xong";
+    }
+
+    if (diff < hour) {
+        return `${Math.floor(diff / minute)} phút trước`;
+    }
+
+    if (diff < day) {
+        return `${Math.floor(diff / hour)} giờ trước`;
+    }
+
+    return `${Math.floor(diff / day)} ngày trước`;
+}
+
+const resolveAttachmentName = (post: any) => {
+    const fileName = typeof post.fileName === "string" ? post.fileName.trim() : "";
+    if (fileName) {
+        return fileName;
+    }
+
+    try {
+        const pathname = new URL(String(post.fileUrl ?? "")).pathname;
+        const lastSegment = pathname.split("/").pop() ?? "";
+        const decoded = decodeURIComponent(lastSegment).trim();
+        if (decoded) {
+            return decoded;
+        }
+    } catch {
+    }
+
+    if (post.fileType === "image") return "image";
+    if (post.fileType === "pdf") return "document.pdf";
+    return "document.docx";
+}
+
+const mapPostToClient = (post: any): PostClientShape => {
+    const user = post.userId ?? {}
+
+    const kind =
+        post.fileType === "doc"
+            ? "word"
+            : post.fileType === "pdf"
+            ? "pdf"
+            : "image"
+
+    const fileName = resolveAttachmentName(post)
+
+    return {
+        id: String(post._id),
+        user: {
+            id: String(user._id ?? ""),
+            fullName: user.fullname ?? "",
+            avatar: user.avatar ?? "user.png",
+        },
+        title: post.title ?? "",
+        createdAt: formatRelativeTime(post.createdAt),
+        attachment: {
+            name: fileName,
+            url: String(post.fileUrl ?? ""),
+            kind,
+        },
+        liked: false,
+        likes: Array.isArray(post.likes) ? post.likes.length : 0,
+        comments: [],
+    }
+}
+
+export const getAllPostService = async (page: number, limit: number, userId?: string): Promise<PostClientShape[]> => {
+    const skip = (page - 1) * limit;
+
+    const posts = await Post.find()
+        .populate("userId", "_id fullname avatar")
+        .sort({ createdAt: -1, _id: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+    return posts.map(mapPostToClient);
+}
+
+export const createPostService = async (
+    data: IPost,
+    file: Express.Multer.File,
+    userId: string
+): Promise<PostClientShape> => {
+    const uploadedFile = await uploadFileToCloudinary(file, "NextCV/posts");
+
+    const post = await Post.create({
         userId,
-        title,
+        title: data.title,
+        fileName: file.originalname,
         fileUrl: uploadedFile.secure_url,
         filePublicId: uploadedFile.public_id,
         fileResourceType: uploadedFile.resource_type,
-        fileType: getFileType(file.mimetype)
+        fileType: getFileType(file.mimetype),
+        createdAt: new Date()
     });
+
+    await post.populate("userId", "_id fullname avatar");
+
+    return mapPostToClient(post.toObject());
 }
 
 export const likePostService = async (post: any, userId: string) => {

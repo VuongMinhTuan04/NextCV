@@ -2,7 +2,7 @@ import { Edit3, MoreHorizontal, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
 
-import type { PostItem } from "../../services/mockPosts"
+import type { PostItem } from "../../types/post"
 import Avatar from "../commons/Avatar"
 import DropdownMenu from "../commons/DropdownMenu"
 import AutoResizeTextarea from "../commons/AutoResizeTextarea"
@@ -36,7 +36,7 @@ const PostHeader = ({
 
   const handleAvatarClick = () => {
     if (!isAuthenticated) {
-      navigate(`/signin?redirect=${encodeURIComponent(`/information/${post.user.id}`)}`)
+      navigate(`/sign-in?redirect=${encodeURIComponent(`/information/${post.user.id}`)}`)
     } else {
       navigate(`/information/${post.user.id}`)
     }

@@ -1,5 +1,6 @@
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from "react"
 import { toast } from "sonner"
+import { informationApi } from "../../services/api"
 import { pushNotification } from "../notifications/useNotifications"
 
 import type { InformationData } from "../../services/mockInformation"
@@ -113,32 +114,38 @@ export const useInformationHandlers = ({
     setInformation,
   ])
 
-  const handleChangePassword = useCallback(() => {
-    const nextErrors = validatePasswordForm(passwordForm, information.password)
+  const handleChangePassword = useCallback(async () => {
+    const nextErrors = validatePasswordForm(passwordForm)
     setPasswordErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) return
 
-    setInformation((prev) => ({
-      ...prev,
-      password: passwordForm.newPassword,
-    }))
+    try {
+      await informationApi.changePassword({
+        oldPassword: passwordForm.oldPassword,
+        newPassword: passwordForm.newPassword,
+        confirmPassword: passwordForm.confirmPassword,
+      })
 
-    setPasswordForm({
-      oldPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    })
-    setPasswordErrors({})
-    setPasswordOpen(false)
-    setEditOpen(true)
+      setPasswordForm({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      })
+      setPasswordErrors({})
+      setPasswordOpen(false)
+      setEditOpen(true)
 
-    toast.success("Đổi mật khẩu thành công")
+      toast.success("Đổi mật khẩu thành công")
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Đổi mật khẩu thất bại"
+      setPasswordErrors({
+        oldPassword: message,
+      })
+    }
   }, [
-    information.password,
     passwordForm,
     setEditOpen,
-    setInformation,
     setPasswordErrors,
     setPasswordForm,
     setPasswordOpen,
@@ -159,7 +166,7 @@ export const useInformationHandlers = ({
         } as PostItem
       })
 
-      const targetPost = prev.find(p => String(p.id) === String(postId))
+      const targetPost = prev.find((p) => String(p.id) === String(postId))
       if (targetPost && !targetPost.liked && viewerUser.id !== targetPost.user.id) {
         pushNotification({
           type: "like",
@@ -177,13 +184,13 @@ export const useInformationHandlers = ({
 
       return nextPosts
     })
-  }, [viewerUser])
+  }, [viewerUser, setInformationPosts])
 
   const handleDeletePost = useCallback((postId: string) => {
     setInformationPosts((prev) =>
       prev.filter((post) => String(post.id) !== String(postId))
     )
-  }, [])
+  }, [setInformationPosts])
 
   const handleUpdatePost = useCallback((postId: string, title: string) => {
     setInformationPosts((prev) =>
@@ -192,7 +199,7 @@ export const useInformationHandlers = ({
         return { ...post, title } as PostItem
       })
     )
-  }, [])
+  }, [setInformationPosts])
 
   const handleAddComment = useCallback(
     (postId: string, payload: { content: string; file: File | null }) => {
@@ -230,7 +237,7 @@ export const useInformationHandlers = ({
           } as PostItem
         })
 
-        const targetPost = prev.find(p => String(p.id) === String(postId))
+        const targetPost = prev.find((p) => String(p.id) === String(postId))
         if (targetPost && viewerUser.id !== targetPost.user.id) {
           pushNotification({
             type: "comment",
@@ -251,7 +258,7 @@ export const useInformationHandlers = ({
         return nextPosts
       })
     },
-    [viewerUser]
+    [viewerUser, setInformationPosts]
   )
 
   const handleUpdateComment = useCallback(
@@ -275,7 +282,7 @@ export const useInformationHandlers = ({
         })
       )
     },
-    []
+    [setInformationPosts]
   )
 
   const handleDeleteComment = useCallback((postId: string, commentId: string) => {
@@ -303,7 +310,7 @@ export const useInformationHandlers = ({
         } as PostItem
       })
     )
-  }, [])
+  }, [setInformationPosts])
 
   return {
     handleUpdateInformation,

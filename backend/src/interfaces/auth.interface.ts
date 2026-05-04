@@ -1,6 +1,7 @@
 export interface ISignIn {
     email: string;
     password: string;
+    rememberMe?: boolean;
 }
 
 export interface ISignUp {
@@ -8,6 +9,7 @@ export interface ISignUp {
     password: string;
     fullname: string;
     phone: string;
+    bio?: string;
 }
 
 export interface IForgotPasswordSendCode {

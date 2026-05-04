@@ -6,6 +6,7 @@ import Information from "../pages/Information"
 import Notification from "../pages/Notification"
 import SignIn from "../pages/auth/SignIn"
 import SignUp from "../pages/auth/SignUp"
+import ForgotPassword from "../pages/auth/ForgotPassword"
 
 const AppRoutes = () => {
   return (
@@ -16,8 +17,9 @@ const AppRoutes = () => {
         <Route path="/information/:id" element={<Information />} />
         <Route path="/notification" element={<Notification />} />
       </Route>
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
+      <Route path="/sign-in" element={<SignIn />} />
+      <Route path="/sign-up" element={<SignUp />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

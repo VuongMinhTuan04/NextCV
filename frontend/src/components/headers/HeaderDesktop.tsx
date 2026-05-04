@@ -29,7 +29,7 @@ const HeaderDesktop = ({
     if (isAuthenticated) {
       navigate(`/information/${userId}`)
     } else {
-      navigate(`/signin?redirect=${encodeURIComponent(`/information/${userId}`)}`)
+      navigate(`/sign-in?redirect=${encodeURIComponent(`/information/${userId}`)}`)
     }
   }
 
@@ -76,7 +76,7 @@ const HeaderDesktop = ({
 
           {results.length > 0 && search.trim() !== "" && (
             <div className="absolute left-0 top-12 z-50 w-full rounded-2xl border border-slate-200 bg-white shadow-lg">
-              <ul className="py-2">
+              <ul className="max-h-72 overflow-y-auto py-2">
                 {results.map((user) => (
                   <li
                     key={user.id}

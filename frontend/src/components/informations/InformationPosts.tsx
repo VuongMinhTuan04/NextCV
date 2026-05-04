@@ -1,14 +1,13 @@
 import { useEffect, useRef } from "react"
-import { Loader2 } from "lucide-react"
 
-import type { PostItem, User } from "../../services/mockPosts"
+import type { PostItem, User } from "../../types/post"
 import PostCard from "../posts/PostCard"
-import { useInfinitePosts } from "../../hooks/commons/useInfinitePosts"
 
 type Props = {
   posts: PostItem[]
   currentUser: User
   ownerId: string
+  ownerEmail?: string
   onToggleLike: (postId: string) => void
   onDeletePost: (postId: string) => void
   onUpdatePost: (postId: string, title: string) => void
@@ -44,7 +43,6 @@ const InformationPosts = ({
   isAuthenticated = false,
 }: Props) => {
   const userPosts = posts.filter((post) => post.user.id === ownerId)
-  const { visiblePosts, isLoading, observerRef } = useInfinitePosts(userPosts)
   const postRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   useEffect(() => {
@@ -71,9 +69,9 @@ const InformationPosts = ({
         </span>
       </div>
 
-      {visiblePosts.length > 0 ? (
+      {userPosts.length > 0 ? (
         <div className="space-y-3 sm:space-y-4">
-          {visiblePosts.map((post) => (
+          {userPosts.map((post) => (
             <div
               key={post.id}
               ref={(el) => {
@@ -108,12 +106,6 @@ const InformationPosts = ({
           </p>
         </div>
       )}
-
-      <div ref={observerRef} className="flex justify-center py-4">
-        {isLoading && (
-          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
-        )}
-      </div>
     </section>
   )
 }

@@ -35,7 +35,6 @@ router.post(
     verifyForgotPasswordCodeController
 );
 
-
 router.patch(
     "/forgot-password/reset",
     validateInputResetPassword,

@@ -34,7 +34,7 @@ export const authorization = async (req: Request, res: Response, next: NextFunct
 
 export const validateInputSignIn = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, rememberMe } = req.body;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if(!email) {
@@ -47,6 +47,10 @@ export const validateInputSignIn = async (req: Request, res: Response, next: Nex
 
         if(!password) {
             return res.status(400).json({ message: "Password is required" });
+        }
+
+        if (typeof rememberMe !== "undefined" && typeof rememberMe !== "boolean") {
+            return res.status(400).json({ message: "rememberMe must be a boolean" })
         }
 
         next();

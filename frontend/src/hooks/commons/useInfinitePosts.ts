@@ -1,32 +1,28 @@
-import { useCallback, useEffect, useRef, useState } from "react"
-import { Loader2 } from "lucide-react"
+import { useEffect, useRef } from "react"
 
-const PAGE_SIZE = 5
-
-export const useInfinitePosts = <T,>(allPosts: T[]) => {
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
-  const [isLoading, setIsLoading] = useState(false)
+export const useInfinitePosts = (
+  loadMore: () => void,
+  hasMore: boolean,
+  isLoading: boolean,
+  enabled = true
+) => {
   const observerRef = useRef<HTMLDivElement | null>(null)
+  const isTriggeringRef = useRef(false)
 
-  const visiblePosts = allPosts.slice(0, visibleCount)
-  const hasMore = visibleCount < allPosts.length
-
-  const loadMore = useCallback(() => {
-    if (isLoading || !hasMore) return
-    setIsLoading(true)
-    setTimeout(() => {
-      setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, allPosts.length))
-      setIsLoading(false)
-    }, 600)
-  }, [isLoading, hasMore, allPosts.length])
+  useEffect(() => {
+    if (!isLoading) {
+      isTriggeringRef.current = false
+    }
+  }, [isLoading, enabled])
 
   useEffect(() => {
     const el = observerRef.current
-    if (!el) return
+    if (!enabled || !el || !hasMore || isLoading) return
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
+        if (entries[0]?.isIntersecting && !isTriggeringRef.current) {
+          isTriggeringRef.current = true
           loadMore()
         }
       },
@@ -35,12 +31,9 @@ export const useInfinitePosts = <T,>(allPosts: T[]) => {
 
     observer.observe(el)
     return () => observer.disconnect()
-  }, [loadMore, hasMore, isLoading])
+  }, [loadMore, hasMore, isLoading, enabled])
 
   return {
-    visiblePosts,
-    isLoading,
-    hasMore,
     observerRef,
   }
 }

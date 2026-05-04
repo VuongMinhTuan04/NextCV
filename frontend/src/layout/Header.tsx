@@ -5,12 +5,12 @@ import HeaderMobile from "../components/headers/HeaderMobile"
 import HeaderRight from "../components/headers/HeaderRight"
 import MobileSearchResult from "../components/headers/MobileSearchResult"
 import { useHeaderSearch } from "../hooks/headers/useHeaderSearch"
-import { useNotifications } from "../hooks/notifications/useNotifications"
-import { currentUser } from "../services/mockPosts"
+import { useAuth } from "../contexts/AuthContext"
 
 const Header = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { user } = useAuth()
 
   const {
     search,
@@ -22,8 +22,6 @@ const Header = () => {
     mobileSearchInputRef,
     closeMobileSearch,
   } = useHeaderSearch()
-
-  const { unreadCount } = useNotifications(currentUser.id)
 
   const handleSelectUser = (userId: string) => {
     navigate(`/information/${userId}`)
@@ -61,7 +59,7 @@ const Header = () => {
           onHomeClick={handleHomeClick}
         />
 
-        <HeaderRight mobileSearchOpen={mobileSearchOpen} unreadCount={unreadCount} />
+        <HeaderRight mobileSearchOpen={mobileSearchOpen} />
       </div>
 
       <MobileSearchResult

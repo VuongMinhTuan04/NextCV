@@ -9,38 +9,45 @@ import {
 } from "../interfaces/auth.interface";
 import PasswordReset from "../models/PasswordReset";
 import { sendResetCodeMail } from "../utils/mail.util";
-import { MINUTE_TO_MS, RESET_CODE_MAX, RESET_CODE_MIN, SECOND_TO_MS } from "../constants/forgotPassword";
+import {
+    MINUTE_TO_MS,
+    RESET_CODE_MAX,
+    RESET_CODE_MIN,
+    SECOND_TO_MS
+} from "../constants/forgotPassword";
 
 const SALT_ROUNDS = 10;
 
 export const signInService = async (data: ISignIn) => {
-    const { email, password } = data;
+    const { email, password, rememberMe = false } = data;
     const normalizedEmail = email.trim().toLowerCase();
 
     const user = await User.findOne({ email: normalizedEmail });
-    if(!user) {
+    if (!user) {
         throw new Error("Sai tài khoản hoặc mật khẩu");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if(!isMatch) {
+    if (!isMatch) {
         throw new Error("Sai tài khoản hoặc mật khẩu");
     }
+
+    const expiresIn = rememberMe ? "7d" : "1d";
 
     const token = jwt.sign(
         {
             userId: user._id,
-            role: user.role
+            role: user.role,
         },
         process.env.JWT_SECRET as string,
-        { expiresIn: "7d" }
+        { expiresIn }
     );
 
-    return { user, token };
+    return { user, token, rememberMe }
 }
 
 export const signUpService = async (data: ISignUp) => {
-    const { email, password, fullname, phone } = data;
+    const { email, password, fullname, phone, bio } = data;
     const normalizedEmail = email.trim().toLowerCase();
 
     const existingUser = await User.findOne({ email: normalizedEmail });
@@ -54,7 +61,8 @@ export const signUpService = async (data: ISignUp) => {
         email: normalizedEmail,
         password: hashedPassword,
         fullname,
-        phone
+        phone,
+        bio: bio ?? ""
     });
 
     return user;

@@ -12,8 +12,9 @@ export const getAllPostController = async (req: Request, res: Response) => {
     try {
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 5;
+        const userId = req.query.userId ? String(req.query.userId) : undefined;
 
-        const posts = await getAllPostService(page, limit);
+        const posts = await getAllPostService(page, limit, userId);
 
         res.status(200).json({ message: "[GET]: Get All Post Success", data: posts });
     } catch (error: any) {

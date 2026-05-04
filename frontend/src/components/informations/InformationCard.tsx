@@ -1,6 +1,6 @@
 import { LogOut, Mail, Phone, PencilLine } from "lucide-react"
 
-import type { InformationData } from "../../services/mockInformation"
+import type { InformationData } from "../../hooks/informations/useInformationPage"
 import Avatar from "../commons/Avatar"
 
 type Props = {
@@ -11,6 +11,18 @@ type Props = {
   onLogout?: () => void
 }
 
+const resolveAvatarSource = (src?: string) => {
+  const value = (src ?? "").trim()
+
+  if (!value) return "/avatar/user.png"
+  if (value.startsWith("http")) return value
+  if (value.startsWith("blob:")) return value
+  if (value.startsWith("data:")) return value
+  if (value.startsWith("/avatar/")) return value
+
+  return `/avatar/${value.replace(/^\/+/, "")}`
+}
+
 const InformationCard = ({
   information,
   canEditInformation,
@@ -18,6 +30,8 @@ const InformationCard = ({
   onPreviewImage,
   onLogout,
 }: Props) => {
+  const avatarSrc = resolveAvatarSource(information.avatar)
+
   return (
     <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm lg:max-w-3xl lg:mx-auto">
       <div className="bg-gradient-to-br from-white to-slate-50 px-4 py-4 sm:px-6 sm:py-6">
@@ -26,11 +40,11 @@ const InformationCard = ({
             <div className="shrink-0 flex flex-col items-center gap-2">
               <button
                 type="button"
-                onClick={() => onPreviewImage(information.avatar)}
+                onClick={() => onPreviewImage(avatarSrc)}
                 className="shrink-0 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 p-1 shadow-sm cursor-pointer transition hover:opacity-80"
               >
                 <Avatar
-                  src={information.avatar}
+                  src={avatarSrc}
                   alt={information.fullName}
                   size="lg"
                   className="h-20 w-20 border-4 border-white text-xl shadow-lg sm:h-24 sm:w-24"

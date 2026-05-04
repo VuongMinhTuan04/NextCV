@@ -14,16 +14,9 @@ const Information = () => {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { logout, currentUser: loggedInUser, isAuthenticated } = useAuth()
+  const { logout, isAuthenticated, user } = useAuth()
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate(`/signin?redirect=${encodeURIComponent(window.location.pathname)}`, { replace: true })
-    }
-  }, [isAuthenticated, navigate])
-
-  const highlightPostId = searchParams.get("postId") || undefined
-  const highlightCommentId = searchParams.get("commentId") || undefined
+  const profileId = id || user?.id
 
   const {
     information,
@@ -56,7 +49,21 @@ const Information = () => {
     handleUpdateComment,
     handleDeleteComment,
     isEditDirty,
-  } = useInformationPage(id)
+  } = useInformationPage(profileId)
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate(`/sign-in?redirect=${encodeURIComponent(window.location.pathname)}`, { replace: true })
+      return
+    }
+
+    if (!id && user?.id) {
+      navigate(`/information/${user.id}`, { replace: true })
+    }
+  }, [isAuthenticated, navigate, id, user?.id])
+
+  const highlightPostId = searchParams.get("postId") || undefined
+  const highlightCommentId = searchParams.get("commentId") || undefined
 
   if (!isAuthenticated) return null
 
@@ -77,6 +84,7 @@ const Information = () => {
           posts={informationPosts}
           currentUser={viewerUser}
           ownerId={information.postOwnerId}
+          ownerEmail={information.email}
           onToggleLike={handleToggleLike}
           onDeletePost={handleDeletePost}
           onUpdatePost={handleUpdatePost}
@@ -107,7 +115,6 @@ const Information = () => {
               open={passwordOpen}
               form={passwordForm}
               errors={passwordErrors}
-              strength={passwordStrength}
               onFieldChange={setPasswordField}
               onChangePassword={handleChangePassword}
               onBack={backToEditModal}

@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 
-import * as mockPostsModule from "../../services/mockPosts"
-import { getInformationById } from "../../services/mockInformation"
-import { currentUser } from "../../services/mockPosts"
+import { useAuth } from "../../contexts/AuthContext"
+import { informationApi, postApi, type InformationProfile } from "../../services/api"
 
-import type { InformationData } from "../../services/mockInformation"
-import type { PostItem, User } from "../../services/mockPosts"
+import type { PostItem, User } from "../../types/post"
 
 import {
   buildPasswordStrength,
@@ -30,8 +28,40 @@ export type {
   PasswordStrengthState,
 } from "./validation"
 
-const pickFirst = (...values: unknown[]) => {
-  return values.find((value) => value !== undefined && value !== null)
+export type InformationData = {
+  id: string
+  postOwnerId: string
+  fullName: string
+  email: string
+  phone: string
+  about: string
+  avatar: string
+  password: string
+}
+
+const PAGE_SIZE = 5
+
+const emptyInformation: InformationData = {
+  id: "",
+  postOwnerId: "",
+  fullName: "",
+  email: "",
+  phone: "",
+  about: "",
+  avatar: "",
+  password: "",
+}
+
+const resolveAvatarSource = (src?: string) => {
+  const value = (src ?? "").trim()
+
+  if (!value) return "/avatar/user.png"
+  if (value.startsWith("http")) return value
+  if (value.startsWith("blob:")) return value
+  if (value.startsWith("data:")) return value
+  if (value.startsWith("/avatar/")) return value
+
+  return `/avatar/${value.replace(/^\/+/, "")}`
 }
 
 const buildEditForm = (information: InformationData): EditInformationFormState => {
@@ -64,45 +94,50 @@ const areFormsEqual = (a: EditInformationFormState, b: EditInformationFormState)
   )
 }
 
+const mapProfileToInformation = (profile: InformationProfile): InformationData => {
+  return {
+    id: profile.id,
+    postOwnerId: profile.id,
+    fullName: profile.fullName ?? "",
+    email: profile.email ?? "",
+    phone: profile.phone ?? "",
+    about: profile.about ?? "",
+    avatar: resolveAvatarSource(profile.avatar),
+    password: "",
+  }
+}
+
 export const useInformationPage = (id?: string) => {
   const draftAvatarRef = useRef<string | null>(null)
+  const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [isUpdateLocked, setIsUpdateLocked] = useState(false)
+  const { user: authUser, setUser } = useAuth()
+
+  const [information, setInformation] = useState<InformationData>(emptyInformation)
+  const [informationPosts, setInformationPosts] = useState<PostItem[]>([])
 
   const [editOpen, setEditOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [previewSrc, setPreviewSrc] = useState("")
   const [submitted, setSubmitted] = useState(false)
 
-  const resolvedInformation = useMemo(() => {
-    return getInformationById(id)
-  }, [id])
+  const profileId = id || authUser?.id
 
-  const postsModule = mockPostsModule as Record<string, unknown>
-
-  const rawPosts = useMemo(() => {
-    return pickFirst(
-      postsModule.mockPosts,
-      postsModule.posts,
-      postsModule.informationPosts,
-      postsModule.data
-    )
-  }, [postsModule])
-
-  const [informationPosts, setInformationPosts] = useState<PostItem[]>([])
-
-  const viewerUser: User = useMemo(() => ({
-    id: resolvedInformation.postOwnerId,
-    fullName: resolvedInformation.fullName,
-    avatar: resolvedInformation.avatar,
-  }), [resolvedInformation])
-
-  const canEditInformation = currentUser.id === resolvedInformation.postOwnerId
-
-  const [information, setInformation] = useState<InformationData>(resolvedInformation)
-
-  const initialEditForm = useMemo(
-    () => buildEditForm(resolvedInformation),
-    [resolvedInformation]
+  const viewerUser: User = useMemo(
+    () => ({
+      id: authUser?.id ?? "",
+      fullName: authUser?.fullName ?? "",
+      avatar: authUser?.avatar ?? "",
+    }),
+    [authUser]
   )
+
+  const canEditInformation = Boolean(
+    authUser?.id && information.postOwnerId && authUser.id === information.postOwnerId
+  )
+
+  const initialEditForm = useMemo(() => buildEditForm(information), [information])
 
   const [editForm, setEditForm] = useState<EditInformationFormState>(initialEditForm)
   const [editInitialForm, setEditInitialForm] = useState<EditInformationFormState>(initialEditForm)
@@ -129,36 +164,93 @@ export const useInformationPage = (id?: string) => {
   const canUpdate = isDirty && isFormValid
 
   useEffect(() => {
-    if (draftAvatarRef.current && isObjectUrl(draftAvatarRef.current)) {
-      URL.revokeObjectURL(draftAvatarRef.current)
-      draftAvatarRef.current = null
+    if (!profileId) return
+
+    let cancelled = false
+
+    const loadInformation = async () => {
+      try {
+        const response = await informationApi.getInformationById(profileId)
+
+        if (cancelled) return
+
+        const nextInformation = mapProfileToInformation(response.data as InformationProfile)
+        setInformation(nextInformation)
+
+        const nextForm = buildEditForm(nextInformation)
+        setEditForm(nextForm)
+        setEditInitialForm(nextForm)
+        setSubmitted(false)
+        setAvatarFile(null)
+
+        setPasswordForm({
+          oldPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        })
+        setPasswordErrors({})
+      } catch (error: any) {
+        if (cancelled) return
+        toast.error(error?.response?.data?.message || "Không tải được thông tin")
+      }
     }
 
-    setInformation(resolvedInformation)
+    void loadInformation()
 
-    const nextForm = buildEditForm(resolvedInformation)
-    setEditForm(nextForm)
-    setEditInitialForm(nextForm)
-    setSubmitted(false)
-
-    setPasswordForm({
-      oldPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    })
-    setPasswordErrors({})
-  }, [resolvedInformation])
+    return () => {
+      cancelled = true
+    }
+  }, [profileId])
 
   useEffect(() => {
-    if (Array.isArray(rawPosts)) {
-      setInformationPosts(rawPosts as PostItem[])
-    } else {
-      setInformationPosts([])
+    if (!profileId) return
+
+    let cancelled = false
+
+    const loadPosts = async () => {
+      try {
+        const collectedPosts: PostItem[] = []
+        let currentPage = 1
+
+        while (true) {
+          const response = await postApi.getPosts(currentPage, PAGE_SIZE, profileId)
+          const nextPosts = response.data ?? []
+          collectedPosts.push(...nextPosts)
+
+          if (nextPosts.length < PAGE_SIZE) {
+            break
+          }
+
+          currentPage += 1
+
+          if (currentPage > 20) {
+            break
+          }
+        }
+
+        if (!cancelled) {
+          setInformationPosts(collectedPosts)
+        }
+      } catch {
+        if (!cancelled) {
+          setInformationPosts([])
+        }
+      }
     }
-  }, [rawPosts])
+
+    void loadPosts()
+
+    return () => {
+      cancelled = true
+    }
+  }, [profileId])
 
   useEffect(() => {
     return () => {
+      if (cooldownTimerRef.current) {
+        clearTimeout(cooldownTimerRef.current)
+      }
+
       if (draftAvatarRef.current && isObjectUrl(draftAvatarRef.current)) {
         URL.revokeObjectURL(draftAvatarRef.current)
       }
@@ -191,6 +283,7 @@ export const useInformationPage = (id?: string) => {
     }
 
     draftAvatarRef.current = null
+    setAvatarFile(null)
     setEditForm(buildEditForm(information))
     setSubmitted(false)
     setEditOpen(false)
@@ -218,6 +311,8 @@ export const useInformationPage = (id?: string) => {
         ...prev,
         [field]: value,
       }))
+
+      setSubmitted(false)
     },
     []
   )
@@ -231,6 +326,7 @@ export const useInformationPage = (id?: string) => {
 
     const url = URL.createObjectURL(file)
     draftAvatarRef.current = url
+    setAvatarFile(file)
 
     setEditForm((prev) => ({
       ...prev,
@@ -253,7 +349,9 @@ export const useInformationPage = (id?: string) => {
     []
   )
 
-  const handleUpdateInformation = useCallback(() => {
+  const handleUpdateInformation = useCallback(async () => {
+    if (isUpdateLocked) return
+
     const nextErrors = validateEditForm(editForm)
 
     if (Object.keys(nextErrors).length > 0) {
@@ -261,32 +359,83 @@ export const useInformationPage = (id?: string) => {
       return
     }
 
-    if (!isDirty) return
+    if (!isDirty || !canEditInformation) return
 
-    const previousAvatar = information.avatar
-    const nextInformation: InformationData = {
-      ...information,
-      fullName: editForm.fullName.trim(),
-      phone: editForm.phone.replace(/\D/g, ""),
-      about: editForm.about.replace(/\r\n/g, "\n"),
-      avatar: editForm.avatar,
+    setIsUpdateLocked(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("fullName", editForm.fullName.trim())
+      formData.append("phone", editForm.phone.replace(/\D/g, ""))
+      formData.append("about", editForm.about.replace(/\r\n/g, "\n"))
+
+      if (avatarFile) {
+        formData.append("avatar", avatarFile)
+      }
+
+      const response = await informationApi.updateMyInformation(formData)
+
+      const nextInformation = mapProfileToInformation(response.data as InformationProfile)
+      const previousAvatar = information.avatar
+
+      setInformation(nextInformation)
+
+      const nextForm = buildEditForm(nextInformation)
+      setEditForm(nextForm)
+      setEditInitialForm(nextForm)
+      setSubmitted(false)
+      setEditOpen(false)
+      setAvatarFile(null)
+
+      if (
+        previousAvatar !== nextInformation.avatar &&
+        previousAvatar.startsWith("blob:")
+      ) {
+        URL.revokeObjectURL(previousAvatar)
+      }
+
+      draftAvatarRef.current = null
+
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              fullName: nextInformation.fullName,
+              avatar: nextInformation.avatar,
+              phone: nextInformation.phone,
+              bio: nextInformation.about,
+              email: nextInformation.email,
+            }
+          : prev
+      )
+
+      toast.success("Cập nhật thành công")
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Cập nhật thất bại")
+    } finally {
+      if (cooldownTimerRef.current) {
+        clearTimeout(cooldownTimerRef.current)
+      }
+
+      cooldownTimerRef.current = setTimeout(() => {
+        setIsUpdateLocked(false)
+      }, 3000)
     }
-
-    setInformation(nextInformation)
-
-    const nextForm = buildEditForm(nextInformation)
-    setEditForm(nextForm)
-    setEditInitialForm(nextForm)
-    setSubmitted(false)
-    setEditOpen(false)
-
-    if (previousAvatar !== nextInformation.avatar && previousAvatar.startsWith("blob:")) {
-      URL.revokeObjectURL(previousAvatar)
-    }
-
-    draftAvatarRef.current = null
-    toast.success("Cập nhật thành công")
-  }, [editForm, information, isDirty])
+  }, [
+    avatarFile,
+    canEditInformation,
+    draftAvatarRef,
+    editForm,
+    information.avatar,
+    isDirty,
+    isUpdateLocked,
+    setEditForm,
+    setEditInitialForm,
+    setEditOpen,
+    setInformation,
+    setSubmitted,
+    setUser,
+  ])
 
   const handlers = useInformationHandlers({
     editForm,
@@ -342,6 +491,7 @@ export const useInformationPage = (id?: string) => {
     passwordStrength,
 
     isEditDirty: canUpdate,
+    isUpdateLocked,
 
     openPreview,
     closePreview,

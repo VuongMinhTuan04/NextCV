@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
 const postSchema = new mongoose.Schema(
     {
@@ -16,6 +16,10 @@ const postSchema = new mongoose.Schema(
             type: String,
             required: true,
             trim: true
+        },
+        fileName: {
+            type: String,
+            default: ""
         },
         filePublicId: {
             type: String,

@@ -1,17 +1,15 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { ArrowLeft, Eye, EyeOff, LockKeyhole } from "lucide-react"
 
 import type {
   ChangePasswordErrors,
   ChangePasswordFormState,
-  PasswordStrengthState,
-} from "../../hooks/informations/useInformationPage"
+} from "../../hooks/informations/validation"
 
 type Props = {
   open: boolean
   form: ChangePasswordFormState
   errors: ChangePasswordErrors
-  strength: PasswordStrengthState
   onFieldChange: (
     field: keyof ChangePasswordFormState,
     value: string
@@ -81,7 +79,6 @@ const ChangePasswordModal = ({
   open,
   form,
   errors,
-  strength,
   onFieldChange,
   onChangePassword,
   onBack,
@@ -91,10 +88,6 @@ const ChangePasswordModal = ({
     newPassword: false,
     confirmPassword: false,
   })
-
-  const score = useMemo(() => {
-    return Math.max(0, Math.min(strength.score, 3))
-  }, [strength.score])
 
   if (!open) return null
 
@@ -150,29 +143,6 @@ const ChangePasswordModal = ({
               onChange={(value) => onFieldChange("newPassword", value)}
             />
 
-            <div className="grid grid-cols-3 gap-2">
-              <div
-                className={`h-2 rounded-full ${
-                  score >= 1 ? "bg-rose-500" : "bg-slate-200"
-                }`}
-              />
-              <div
-                className={`h-2 rounded-full ${
-                  score >= 2 ? "bg-amber-500" : "bg-slate-200"
-                }`}
-              />
-              <div
-                className={`h-2 rounded-full ${
-                  score === 3 ? "bg-emerald-500" : "bg-slate-200"
-                }`}
-              />
-            </div>
-
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span>Mật khẩu nên có tối thiểu 6 ký tự.</span>
-              <span>{strength.label}</span>
-            </div>
-
             <PasswordField
               label="Xác nhận mật khẩu"
               value={form.confirmPassword}
@@ -185,7 +155,9 @@ const ChangePasswordModal = ({
                   confirmPassword: !prev.confirmPassword,
                 }))
               }
-              onChange={(value) => onFieldChange("confirmPassword", value)}
+              onChange={(value) =>
+                onFieldChange("confirmPassword", value)
+              }
             />
 
             <div className="flex flex-col gap-3 pt-1 sm:flex-row">

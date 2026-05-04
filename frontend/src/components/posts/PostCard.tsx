@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-import type { PostItem, User } from "../../services/mockPosts"
+import type { PostItem, User } from "../../types/post"
 import { usePostActions } from "../../hooks/posts/usePostActions"
 import PostHeader from "./PostHeader"
 import PostMedia from "./PostMedia"
@@ -87,6 +87,19 @@ const PostCard = ({
 
   const canManage = post.user.id === currentUser.id
 
+  const avatarSrc =
+    post.user.avatar?.startsWith("http")
+      ? post.user.avatar
+      : `/avatar/${post.user.avatar || "user.png"}`
+
+  const normalizedPost = {
+    ...post,
+    user: {
+      ...post.user,
+      avatar: avatarSrc,
+    },
+  }
+
   return (
     <article
       className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-500 ${
@@ -94,7 +107,7 @@ const PostCard = ({
       }`}
     >
       <PostHeader
-        post={post}
+        post={normalizedPost}
         canManage={canManage}
         isEditing={isEditing}
         draftTitle={draftTitle}

@@ -8,21 +8,23 @@ import {
     verifyForgotPasswordCodeService
 } from "../services/auth.service";
 
+const REMEMBER_ME_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+
 export const signInController = async (req: Request, res: Response) => {
     try {
-        const { user, token } = await signInService(req.body);
+        const { user, token, rememberMe } = await signInService(req.body);
 
         res.cookie("accessToken", token, {
             httpOnly: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000, //7 Days
             sameSite: "lax",
             secure: process.env.NODE_ENV === "production",
-            path: "/"
+            path: "/",
+            ...(rememberMe ? { maxAge: REMEMBER_ME_MAX_AGE } : {}),
         });
 
         const { password, ...infoUser } = user.toObject();
 
-        res.status(200).json({ message: "[GET]: Sign In Success", data: infoUser });
+        res.status(200).json({ message: "Sign In Success", data: infoUser });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }

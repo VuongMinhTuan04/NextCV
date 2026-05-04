@@ -64,11 +64,16 @@ const CommentItem = ({
 
   const handleAvatarClick = () => {
     if (!isAuthenticated) {
-      navigate(`/signin?redirect=${encodeURIComponent(`/information/${comment.user.id}`)}`)
+      navigate(`/sign-in?redirect=${encodeURIComponent(`/information/${comment.user.id}`)}`)
     } else {
       navigate(`/information/${comment.user.id}`)
     }
   }
+
+  const avatarSrc =
+    comment.user.avatar?.startsWith("http")
+      ? comment.user.avatar
+      : `/avatar/${comment.user.avatar || "user.png"}`
 
   return (
     <div className="flex gap-3 items-start rounded-2xl p-3">
@@ -78,7 +83,7 @@ const CommentItem = ({
         className="shrink-0 cursor-pointer rounded-full transition hover:opacity-80"
       >
         <Avatar
-          src={comment.user.avatar}
+          src={avatarSrc}
           alt={comment.user.fullName}
           size="sm"
         />
@@ -154,10 +159,9 @@ const CommentItem = ({
                 ) : (
                   <a
                     href={comment.attachment.url}
-                    download={comment.attachment.name}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex cursor-pointer items-center gap-3 rounded-lg hover:bg-slate-100 transition px-3 py-2"
+                    className="inline-flex cursor-pointer items-center gap-3 rounded-lg transition px-3 py-2 hover:bg-slate-100"
                   >
                     <div className="grid h-8 w-8 place-items-center rounded-full bg-white text-slate-500">
                       <FileText className="h-4 w-4" />

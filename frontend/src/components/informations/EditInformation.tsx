@@ -12,6 +12,7 @@ type Props = {
   form: EditInformationFormState
   errors: EditInformationErrors
   isDirty: boolean
+  isUpdating?: boolean
   onFieldChange: (field: EditInformationField, value: string) => void
   onAvatarChange: (file: File | null) => void
   onUpdate: () => void
@@ -24,6 +25,7 @@ const EditInformation = ({
   form,
   errors,
   isDirty,
+  isUpdating = false,
   onFieldChange,
   onAvatarChange,
   onUpdate,
@@ -193,7 +195,7 @@ const EditInformation = ({
                 <button
                   type="button"
                   onClick={onUpdate}
-                  disabled={!isDirty}
+                  disabled={!isDirty || isUpdating}
                   className="inline-flex min-w-[160px] flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
                 >
                   <Save className="h-4 w-4" />

@@ -16,11 +16,11 @@ export const isAllowedFile = (mimeType: string) => {
 }
 
 export const getFileType = (mimeType: string): FileType => {
-    if(mimeType.startsWith("image/")) {
+    if (mimeType.startsWith("image/")) {
         return FILE_TYPE.IMAGE;
     }
 
-    if(mimeType === "application/pdf") {
+    if (mimeType === "application/pdf") {
         return FILE_TYPE.PDF;
     }
 
@@ -31,32 +31,31 @@ export const uploadFileToCloudinary = (
     file: Express.Multer.File,
     folder = "posts"
 ) => new Promise<any>((resolve, reject) => {
-        const resourceType = file.mimetype.startsWith("image/") ? "image" : "raw";
 
-        const stream = cloudinary.uploader.upload_stream(
-            {
-                folder,
-                resource_type: resourceType
-            },
-            (error, result) => {
-                if (error) {
-                    return reject(error);
-                }
+    const resourceType =
+        file.mimetype.startsWith("image/")
+            ? "image"
+            : "raw";
 
-                if (!result) {
-                    return reject(new Error("Upload failed"));
-                }
-                
-                resolve({
-                    secure_url: result.secure_url,
-                    public_id: result.public_id,
-                    resource_type: result.resource_type
-                });
-            }
-        );
+    const stream = cloudinary.uploader.upload_stream(
+        {
+            folder,
+            resource_type: resourceType,
+        },
+        (error, result) => {
+            if (error) return reject(error);
+            if (!result) return reject(new Error("Upload failed"));
 
-        Readable.from(file.buffer).pipe(stream);
-    });
+            resolve({
+                secure_url: result.secure_url,
+                public_id: result.public_id,
+                resource_type: result.resource_type
+            });
+        }
+    );
+
+    Readable.from(file.buffer).pipe(stream);
+});
 
 export const deleteFileFromCloudinary = async (
     publicId: string,

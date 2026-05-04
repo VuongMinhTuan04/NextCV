@@ -1,4 +1,4 @@
-import { useRef, type ChangeEvent } from "react"
+import { useRef, useState, type ChangeEvent } from "react"
 import {
   FileText,
   Image as ImageIcon,
@@ -10,7 +10,7 @@ import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../contexts/AuthContext"
 
-import type { User } from "../../services/mockPosts"
+import type { User } from "../../types/post"
 import type { AttachmentKind } from "../../utils/file"
 import { useCreatePost } from "../../hooks/posts/useCreatePost"
 
@@ -22,7 +22,7 @@ type Props = {
   onCreatePost: (payload: {
     title: string
     file: File
-  }) => void
+  }) => Promise<void>
 }
 
 type FileChipProps = {
@@ -96,6 +96,7 @@ const CreatePost = ({
     useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
     title,
@@ -133,26 +134,37 @@ const CreatePost = ({
     }
   }
 
-  const handleSubmit = () => {
-    if (!canSubmit || !file) return
+  const handleSubmit = async () => {
+    if (!canSubmit || !file || isSubmitting) return
 
-    onCreatePost({
-      title: title.trim(),
-      file,
-    })
+    try {
+      setIsSubmitting(true)
 
-    reset()
+      await onCreatePost({
+        title: title.trim(),
+        file,
+      })
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      reset()
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+
+      toast.success("Đăng bài thành công", { duration: 1000 })
+    } finally {
+      setIsSubmitting(false)
     }
-
-    toast.success("Đăng bài thành công", { duration: 1000 })
   }
 
   const handleAvatarClick = () => {
     navigate(`/information/${currentUser.id}`)
   }
+
+  const avatarSrc =
+    currentUser.avatar?.startsWith("http")
+      ? currentUser.avatar
+      : `/avatar/${currentUser.avatar || "user.png"}`
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -163,7 +175,7 @@ const CreatePost = ({
           className="shrink-0 rounded-full cursor-pointer transition hover:opacity-80"
         >
           <Avatar
-            src={currentUser.avatar}
+            src={avatarSrc}
             alt={currentUser.fullName}
           />
         </button>
@@ -192,9 +204,9 @@ const CreatePost = ({
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!canSubmit}
+          disabled={!canSubmit || isSubmitting}
           className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition ${
-            canSubmit
+            canSubmit && !isSubmitting
               ? "bg-blue-600 text-white hover:bg-blue-700"
               : "bg-slate-200 text-slate-400"
           }`}

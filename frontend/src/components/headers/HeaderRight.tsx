@@ -8,12 +8,12 @@ type Props = {
 }
 
 const HeaderRight = ({ mobileSearchOpen }: Props) => {
-  const { currentUser } = useAuth()
-  const { unreadCount } = useNotifications(currentUser?.id)
+  const { user } = useAuth()
+  const { unreadCount } = useNotifications(user?.id)
 
   return (
     <div className={`flex items-center gap-4 ${mobileSearchOpen ? "max-sm:hidden" : ""} sm:flex`}>
-      {currentUser ? (
+      {user ? (
         <>
           <NavLink
             to="/notification"
@@ -22,29 +22,35 @@ const HeaderRight = ({ mobileSearchOpen }: Props) => {
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
-                {unreadCount > 9 ? "9+" : unreadCount}
+                {unreadCount > 10 ? "10+" : unreadCount}
               </span>
             )}
           </NavLink>
 
           <NavLink
-            to={`/information/${currentUser.id}`}
-            className="h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-200"
+            to={`/information/${user.id}`}
+            className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-200"
           >
             <img
-              src={currentUser.avatar}
-              alt={currentUser.fullName}
+              src={
+                user.avatar?.startsWith("http")
+                  ? user.avatar
+                  : `/avatar/${user.avatar || "user.png"}`
+              }
+              alt={user.fullName}
               className="h-full w-full object-cover"
             />
           </NavLink>
         </>
       ) : (
         <NavLink
-          to="/signin"
-          className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+          to="/sign-in"
+          className="text-sm font-medium text-blue-600 transition hover:text-blue-800"
         >
-          <LogIn className="h-4 w-4" />
-          Đăng nhập
+          <span className="inline-flex items-center gap-2">
+            <LogIn className="h-4 w-4" />
+            Đăng nhập
+          </span>
         </NavLink>
       )}
     </div>

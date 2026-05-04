@@ -9,7 +9,12 @@ type Props = {
   onSelectUser: (userId: string) => void
 }
 
-const MobileSearchResult = ({ mobileSearchOpen, results, search, onSelectUser }: Props) => {
+const MobileSearchResult = ({
+  mobileSearchOpen,
+  results,
+  search,
+  onSelectUser,
+}: Props) => {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
 
@@ -19,13 +24,13 @@ const MobileSearchResult = ({ mobileSearchOpen, results, search, onSelectUser }:
     if (isAuthenticated) {
       onSelectUser(userId)
     } else {
-      navigate(`/signin?redirect=${encodeURIComponent(`/information/${userId}`)}`)
+      navigate(`/sign-in?redirect=${encodeURIComponent(`/information/${userId}`)}`)
     }
   }
 
   return (
     <div className="absolute left-0 top-16 z-50 w-full border-b border-slate-200 bg-white sm:hidden">
-      <ul className="py-2">
+      <ul className="max-h-72 overflow-y-auto py-2">
         {results.map((user) => (
           <li
             key={user.id}
@@ -36,6 +41,9 @@ const MobileSearchResult = ({ mobileSearchOpen, results, search, onSelectUser }:
               src={user.avatar}
               alt={user.fullName}
               className="h-8 w-8 rounded-full object-cover"
+              onError={(e) => {
+                ;(e.currentTarget as HTMLImageElement).src = "/avatar/user.png"
+              }}
             />
             <span className="text-sm text-slate-700">{user.fullName}</span>
           </li>

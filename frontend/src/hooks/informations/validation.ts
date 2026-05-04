@@ -73,21 +73,20 @@ export const validateEditForm = (form: EditInformationFormState) => {
 }
 
 export const validatePasswordForm = (
-  form: ChangePasswordFormState,
-  currentPassword: string
+  form: ChangePasswordFormState
 ) => {
   const errors: ChangePasswordErrors = {}
 
   if (!form.oldPassword.trim()) {
     errors.oldPassword = "Vui lòng nhập mật khẩu cũ."
-  } else if (form.oldPassword !== currentPassword) {
-    errors.oldPassword = "Mật khẩu cũ không đúng."
   }
 
   if (!form.newPassword.trim()) {
     errors.newPassword = "Vui lòng nhập mật khẩu mới."
   } else if (form.newPassword.length < 6) {
     errors.newPassword = "Mật khẩu mới phải có ít nhất 6 ký tự."
+  } else if (form.newPassword === form.oldPassword) {
+    errors.newPassword = "Mật khẩu mới phải khác mật khẩu cũ."
   }
 
   if (!form.confirmPassword.trim()) {

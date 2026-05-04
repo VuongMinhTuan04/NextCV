@@ -78,11 +78,16 @@ const CommentInput = ({
       ? "text-rose-700"
       : "text-sky-700"
 
+  const avatarSrc =
+    currentUser.avatar?.startsWith("http")
+      ? currentUser.avatar
+      : `/avatar/${currentUser.avatar || "user.png"}`
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-3">
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
         <Avatar
-          src={currentUser.avatar}
+          src={avatarSrc}
           alt={currentUser.fullName}
         />
 

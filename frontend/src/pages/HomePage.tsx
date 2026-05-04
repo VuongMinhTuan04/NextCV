@@ -1,32 +1,67 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { Loader2 } from "lucide-react"
 
 import CreatePost from "../components/posts/CreatePost"
 import PostCard from "../components/posts/PostCard"
 import ImagePreviewModal from "../components/modals/ImagePreviewModal"
-import { initialPosts, type PostItem } from "../services/mockPosts"
+import { postApi } from "../services/api"
 import { buildAttachment } from "../utils/file"
 import { useImagePreview } from "../hooks/commons/useImagePreview"
 import { useInfinitePosts } from "../hooks/commons/useInfinitePosts"
 import { useAuth } from "../contexts/AuthContext"
+import type { PostItem, User } from "../types/post"
+
+const PAGE_SIZE = 5
 
 const HomePage = () => {
-  const [posts, setPosts] = useState<PostItem[]>(initialPosts)
+  const [posts, setPosts] = useState<PostItem[]>([])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasLoadedInitialPosts, setHasLoadedInitialPosts] = useState(false)
+  const [hasUserScrolled, setHasUserScrolled] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+
   const [searchParams] = useSearchParams()
   const highlightPostId = searchParams.get("postId")
   const highlightCommentId = searchParams.get("commentId")
   const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null)
-  const { currentUser, isAuthenticated } = useAuth()
+  const { user, isAuthenticated } = useAuth()
 
-  const activeUser = isAuthenticated && currentUser ? currentUser : null
-  const fallbackUser = activeUser || { id: "", fullName: "", avatar: "" }
-
-  const { visiblePosts, isLoading, observerRef } = useInfinitePosts(posts)
+  const activeUser = isAuthenticated && user ? user : null
+  const fallbackUser: User = activeUser || { id: "", fullName: "", avatar: "/avatar/user.png" }
 
   useEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual'
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        setHasUserScrolled(true)
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    handleScroll()
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [])
+
+  const loadMore = useCallback(() => {
+    if (!hasLoadedInitialPosts || !hasUserScrolled || isLoading || !hasMore || posts.length === 0) return
+    setPage((prev) => prev + 1)
+  }, [hasLoadedInitialPosts, hasUserScrolled, isLoading, hasMore, posts.length])
+
+  const { observerRef } = useInfinitePosts(
+    loadMore,
+    hasMore,
+    isLoading,
+    hasLoadedInitialPosts && hasUserScrolled
+  )
+
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual"
     }
     window.scrollTo(0, 0)
   }, [])
@@ -38,35 +73,84 @@ const HomePage = () => {
   }, [highlightPostId])
 
   useEffect(() => {
-    if (highlightPostId) {
-      setHighlightedPostId(highlightPostId)
-      const el = document.getElementById(`post-${highlightPostId}`)
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" })
-      }
-      const timer = setTimeout(() => {
-        setHighlightedPostId(null)
-      }, 3000)
-      return () => clearTimeout(timer)
+    if (!highlightPostId) {
+      setHighlightedPostId(null)
+      return
     }
-  }, [highlightPostId])
+
+    const el = document.getElementById(`post-${highlightPostId}`)
+    if (!el) return
+
+    setHighlightedPostId(highlightPostId)
+    el.scrollIntoView({ behavior: "smooth", block: "center" })
+
+    const timer = setTimeout(() => {
+      setHighlightedPostId(null)
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [highlightPostId, posts])
+
+  useEffect(() => {
+    let active = true
+
+    const fetchPosts = async () => {
+      try {
+        setIsLoading(true)
+
+        const response = await postApi.getPosts(page, PAGE_SIZE)
+        if (!active) return
+
+        const nextPosts = response.data ?? []
+
+        setPosts((prev) => (page === 1 ? nextPosts : [...prev, ...nextPosts]))
+        setHasMore(nextPosts.length === PAGE_SIZE)
+      } catch {
+        if (active) {
+          if (page === 1) {
+            setPosts([])
+          }
+          setHasMore(false)
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false)
+          if (page === 1) {
+            setHasLoadedInitialPosts(true)
+          }
+        }
+      }
+    }
+
+    void fetchPosts()
+
+    return () => {
+      active = false
+    }
+  }, [page, refreshKey])
 
   const { previewSrc, openPreview, closePreview } = useImagePreview()
 
-  const handleCreatePost = ({ title, file }: { title: string; file: File }) => {
+  const handleCreatePost = async ({ title, file }: { title: string; file: File }) => {
     if (!activeUser) return
-    const attachment = buildAttachment(file)
-    const newPost: PostItem = {
-      id: crypto.randomUUID(),
-      user: activeUser,
-      title,
-      createdAt: "Vừa xong",
-      attachment,
-      liked: false,
-      likes: 0,
-      comments: [],
+
+    const formData = new FormData()
+    formData.append("title", title)
+    formData.append("file", file)
+
+    const response = await postApi.createPost(formData)
+    const createdPost = response.data
+
+    if (!createdPost) {
+      throw new Error("Tạo bài viết thất bại")
     }
-    setPosts((prev) => [newPost, ...prev])
+
+    setPage(1)
+    setPosts([])
+    setHasMore(true)
+    setHasLoadedInitialPosts(false)
+    setHasUserScrolled(false)
+    setRefreshKey((prev) => prev + 1)
   }
 
   const handleToggleLike = (postId: string) => {
@@ -75,7 +159,11 @@ const HomePage = () => {
       prev.map((post) =>
         post.id !== postId
           ? post
-          : { ...post, liked: !post.liked, likes: post.liked ? post.likes - 1 : post.likes + 1 }
+          : {
+              ...post,
+              liked: !post.liked,
+              likes: post.liked ? post.likes - 1 : post.likes + 1,
+            }
       )
     )
   }
@@ -142,9 +230,9 @@ const HomePage = () => {
     <div className="mx-auto w-full max-w-3xl space-y-4 px-4 pt-0 pb-2 sm:px-6 lg:py-4">
       {activeUser && <CreatePost currentUser={activeUser} onCreatePost={handleCreatePost} />}
 
-      {visiblePosts.length > 0 ? (
+      {posts.length > 0 ? (
         <div className="space-y-4">
-          {visiblePosts.map((post) => (
+          {posts.map((post) => (
             <div key={post.id} id={`post-${post.id}`}>
               <PostCard
                 post={post}
@@ -164,16 +252,14 @@ const HomePage = () => {
             </div>
           ))}
         </div>
-      ) : (
+      ) : !isLoading ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 shadow-sm">
           Chưa có bài viết nào.
         </div>
-      )}
+      ) : null}
 
       <div ref={observerRef} className="flex justify-center py-4">
-        {isLoading && (
-          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
-        )}
+        {isLoading && <Loader2 className="h-6 w-6 animate-spin text-slate-400" />}
       </div>
 
       <ImagePreviewModal src={previewSrc} onClose={closePreview} />
