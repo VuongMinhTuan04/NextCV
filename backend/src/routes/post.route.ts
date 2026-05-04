@@ -2,7 +2,6 @@ import express from "express";
 import {
     createPostController,
     deletePostController,
-    editPostController,
     getAllPostController,
     likePostController,
     updatePostController
@@ -36,15 +35,6 @@ router.patch(
     validateObjectId("id"),
     loadPost(),
     likePostController
-);
-
-router.get(
-    "/edit/:id",
-    authentication,
-    validateObjectId("id"),
-    loadPost(),
-    canEditAndUpdatePost,
-    editPostController
 );
 
 router.patch(

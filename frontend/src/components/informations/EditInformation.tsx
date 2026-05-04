@@ -5,7 +5,7 @@ import type {
   EditInformationErrors,
   EditInformationFormState,
   EditInformationField,
-} from "../../hooks/informations/useInformationPage"
+} from "../../hooks/informations/validation"
 
 type Props = {
   open: boolean

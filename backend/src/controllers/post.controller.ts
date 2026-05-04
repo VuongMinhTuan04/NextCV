@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import {
     createPostService,
     deletePostService,
-    editPostService,
     getAllPostService,
     likePostService,
     updatePostService
@@ -47,18 +46,6 @@ export const likePostController = async (req: Request, res: Response) => {
             liked: result.liked,
             likesCount: result.likesCount
         });
-    } catch (error: any) {
-        res.status(400).json({ message: error.message });
-    }
-}
-
-export const editPostController = async (req: Request, res: Response) => {
-    try {
-        const post = (req as any).post;
-
-        const result = await editPostService(post);
-
-        res.status(200).json({ message: "[GET]: Edit Post Success", data: result });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }

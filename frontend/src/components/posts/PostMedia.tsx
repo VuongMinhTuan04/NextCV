@@ -1,6 +1,5 @@
 import {
   Download,
-  ExternalLink,
   FileBadge,
   FileText,
 } from "lucide-react"
@@ -32,26 +31,18 @@ const PostMedia = ({ attachment, onPreviewImage }: Props) => {
 
   if (attachment.kind === "image") {
     return (
-      <button
-        type="button"
-        onClick={() => onPreviewImage(attachment.url)}
-        className="mt-4 block w-full cursor-pointer overflow-hidden rounded-2xl border border-cyan-100 bg-cyan-50 transition hover:opacity-95"
+      <button type="button" onClick={() => onPreviewImage(attachment.url)} className="mt-4 block w-full cursor-pointer
+        overflow-hidden rounded-2xl border border-cyan-100 bg-cyan-50 transition hover:opacity-95"
       >
-        <img
-          src={attachment.url}
-          alt={attachment.name}
-          className="h-auto max-h-96 w-full object-cover"
-        />
+        <img src={attachment.url} alt={attachment.name} className="h-auto max-h-96 w-full object-cover" />
       </button>
     )
   }
 
   if (attachment.kind === "pdf") {
     return (
-      <button
-        type="button"
-        onClick={handleDownload}
-        className="mt-4 flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-left transition hover:bg-rose-100"
+      <button type="button" onClick={handleDownload} className="mt-4 flex w-full cursor-pointer items-center justify-between
+        gap-3 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-left transition hover:bg-rose-100"
       >
         <div className="flex min-w-0 items-center gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-rose-600">
@@ -72,10 +63,8 @@ const PostMedia = ({ attachment, onPreviewImage }: Props) => {
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleDownload}
-      className="mt-4 flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-left transition hover:bg-sky-100"
+    <button type="button" onClick={handleDownload} className="mt-4 flex w-full cursor-pointer items-center justify-between
+      gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-left transition hover:bg-sky-100"
     >
       <div className="flex min-w-0 items-center gap-3">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-sky-600">

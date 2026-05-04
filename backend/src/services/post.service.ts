@@ -73,16 +73,16 @@ const resolveAttachmentName = (post: any) => {
 }
 
 const mapPostToClient = (post: any): PostClientShape => {
-    const user = post.userId ?? {}
+    const user = post.userId ?? {};
 
     const kind =
         post.fileType === "doc"
             ? "word"
             : post.fileType === "pdf"
             ? "pdf"
-            : "image"
+            : "image";
 
-    const fileName = resolveAttachmentName(post)
+    const fileName = resolveAttachmentName(post);
 
     return {
         id: String(post._id),
@@ -180,10 +180,6 @@ export const likePostService = async (post: any, userId: string) => {
         liked: true,
         likesCount: post.likes.length
     }
-}
-
-export const editPostService = async (post: any) => {
-    return post;
 }
 
 export const updatePostService = async (data: IPost, post: any) => {

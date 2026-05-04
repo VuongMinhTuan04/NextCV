@@ -23,37 +23,47 @@ const Information = () => {
     informationPosts,
     viewerUser,
     canEditInformation,
+
     editOpen,
     passwordOpen,
+
     editForm,
     editErrors,
     passwordForm,
     passwordErrors,
-    passwordStrength,
+
     previewSrc,
+
     openPreview,
     closePreview,
+
     openEditModal,
     closeEditModal,
     openPasswordModal,
     backToEditModal,
+
     setField,
     setAvatar,
+
     handleUpdateInformation,
     setPasswordField,
     handleChangePassword,
+
     handleToggleLike,
     handleDeletePost,
     handleUpdatePost,
     handleAddComment,
     handleUpdateComment,
     handleDeleteComment,
+
     isEditDirty,
   } = useInformationPage(profileId)
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate(`/sign-in?redirect=${encodeURIComponent(window.location.pathname)}`, { replace: true })
+      navigate(`/sign-in?redirect=${encodeURIComponent(window.location.pathname)}`, {
+        replace: true,
+      })
       return
     }
 

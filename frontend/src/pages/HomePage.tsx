@@ -168,11 +168,19 @@ const HomePage = () => {
     )
   }
 
-  const handleDeletePost = (postId: string) => {
+  const handleDeletePost = async (postId: string) => {
+    if (!activeUser) return
+
+    await postApi.deletePost(postId)
+
     setPosts((prev) => prev.filter((post) => post.id !== postId))
   }
 
-  const handleUpdatePost = (postId: string, title: string) => {
+  const handleUpdatePost = async (postId: string, title: string) => {
+    if (!activeUser) return
+
+    await postApi.updatePost(postId, title)
+
     setPosts((prev) =>
       prev.map((post) => (post.id === postId ? { ...post, title } : post))
     )

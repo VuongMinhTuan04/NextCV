@@ -170,6 +170,20 @@ export const postApi = {
     })
     return response.data
   },
+
+  updatePost: async (postId: string, title: string) => {
+    const response = await api.patch<ApiResponse<PostItem>>(
+      `/post/update/${postId}`,
+      { title },
+      jsonConfig
+    )
+    return response.data
+  },
+
+  deletePost: async (postId: string) => {
+    const response = await api.delete<ApiResponse<null>>(`/post/delete/${postId}`)
+    return response.data
+  },
 }
 
 export default api

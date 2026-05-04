@@ -14,12 +14,10 @@ export const getAttachmentKind = (
   const { type, name } = file
   const lowerName = name.toLowerCase()
 
-  // Image
   if (type.startsWith("image/")) {
     return "image"
   }
 
-  // PDF
   if (
     type === "application/pdf" ||
     lowerName.endsWith(".pdf")

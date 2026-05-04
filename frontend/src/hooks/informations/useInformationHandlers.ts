@@ -3,8 +3,8 @@ import { toast } from "sonner"
 import { informationApi } from "../../services/api"
 import { pushNotification } from "../notifications/useNotifications"
 
-import type { InformationData } from "../../services/mockInformation"
-import type { PostItem, User } from "../../services/mockPosts"
+import type { InformationData } from "./useInformationPage"
+import type { PostItem, User } from "../../types/post"
 import type { Attachment } from "../../utils/file"
 import { getAttachmentKind } from "../../utils/file"
 
