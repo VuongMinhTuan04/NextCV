@@ -15,77 +15,94 @@ const NotificationsPanel = ({
 }: Props) => {
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-      <section className="rounded-[24px] bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-800 px-5 py-4 text-white shadow-[0_18px_40px_rgba(15,23,42,0.22)]">
+      <section className="rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 px-6 py-5 text-white shadow-[0_20px_50px_rgba(15,23,42,0.35)]">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20">
               <Bell className="h-5 w-5" />
             </div>
-
-            <h1 className="truncate text-lg font-semibold tracking-tight">
+            <h1 className="text-lg font-semibold tracking-tight">
               Thông báo
             </h1>
           </div>
 
-          <span className="inline-flex shrink-0 items-center rounded-full bg-white/10 px-3 py-1 text-sm font-medium ring-1 ring-white/15">
+          <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-sm font-medium backdrop-blur ring-1 ring-white/20">
             {unreadCount} chưa đọc
           </span>
         </div>
       </section>
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-6 space-y-3">
         {notifications.length === 0 ? (
-          <div className="rounded-[26px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
-            <Bell className="mx-auto h-7 w-7 text-slate-400" />
-            <div className="mt-4 text-slate-500">Không có thông báo</div>
+          <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+            <Bell className="mx-auto h-8 w-8 text-slate-400" />
+            <div className="mt-4 text-slate-500">
+              Không có thông báo
+            </div>
           </div>
         ) : (
           notifications.map((n) => {
-            const to = `/?postId=${n.postId}${n.commentId ? `&commentId=${n.commentId}` : ""}`
+            const isLike =
+              n.type === "like_post" || n.type === "like_comment"
+
+            const to = `/?postId=${n.postId}${
+              n.commentId ? `&commentId=${n.commentId}` : ""
+            }`
 
             return (
               <Link
                 key={n.id}
                 to={to}
                 onClick={() => markAsRead(n.id)}
-                className={`relative block rounded-2xl border bg-white p-4 shadow-sm ${
-                  n.isRead ? "opacity-70" : ""
+                className={`group relative block overflow-hidden rounded-3xl border bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md ${
+                  n.isRead
+                    ? "opacity-70"
+                    : "border-blue-100 bg-blue-50/40"
                 }`}
               >
                 <div className="flex items-start gap-3">
                   <img
                     src={n.actor.avatar}
-                    className="h-10 w-10 rounded-full"
+                    className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow-sm"
                   />
 
                   <div className="flex-1">
-                    <div className="text-sm">
-                      <span className="font-semibold">
+                    <div className="text-sm leading-relaxed text-slate-700">
+                      <span className="font-semibold text-slate-900">
                         {n.actor.fullName}
                       </span>{" "}
                       {n.actionText}
                     </div>
 
-                    <div className="mt-1 text-xs text-slate-500">
+                    <div className="mt-1 text-xs text-slate-500 line-clamp-1">
                       {n.postTitle}
                     </div>
 
-                    {n.commentPreview ? (
-                      <div className="mt-2 text-xs italic text-slate-400">
+                    {n.commentPreview && (
+                      <div className="mt-2 rounded-xl bg-slate-100 px-3 py-2 text-xs italic text-slate-500 line-clamp-2">
                         {n.commentPreview}
                       </div>
-                    ) : null}
+                    )}
                   </div>
 
-                  {n.type === "like" ? (
-                    <Heart className="h-4 w-4 text-red-500" />
-                  ) : (
-                    <MessageCircle className="h-4 w-4 text-blue-500" />
-                  )}
+                  <div className="mt-1">
+                    {isLike ? (
+                      <div className="grid h-8 w-8 place-items-center rounded-full bg-red-100 text-red-500">
+                        <Heart className="h-4 w-4" />
+                      </div>
+                    ) : (
+                      <div className="grid h-8 w-8 place-items-center rounded-full bg-blue-100 text-blue-500">
+                        <MessageCircle className="h-4 w-4" />
+                      </div>
+                    )}
+                  </div>
                 </div>
+
                 {!n.isRead && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-blue-500 shadow-sm" />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-blue-500 shadow-md" />
                 )}
+
+                <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 transition group-hover:opacity-100 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
               </Link>
             )
           })

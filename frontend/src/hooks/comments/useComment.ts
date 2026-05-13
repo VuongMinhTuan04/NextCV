@@ -8,8 +8,7 @@ import {
 export const useComment = () => {
   const [content, setContent] = useState("")
   const [file, setFile] = useState<File | null>(null)
-  const [fileKind, setFileKind] =
-    useState<AttachmentKind | null>(null)
+  const [fileKind, setFileKind] = useState<AttachmentKind | null>(null)
 
   const selectFile = (nextFile: File | null) => {
     if (!nextFile) {
@@ -34,8 +33,8 @@ export const useComment = () => {
   }
 
   const canSend = useMemo(() => {
-    return content.trim() !== ""
-  }, [content])
+    return content.trim() !== "" || file !== null
+  }, [content, file])
 
   return {
     content,

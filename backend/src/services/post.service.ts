@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { NOTIFICATION_TYPE } from "../constants/typeNotification";
 import { IPost } from "../interfaces/post.interface";
 import Post from "../models/Post"
@@ -191,10 +192,16 @@ export const updatePostService = async (data: IPost, post: any) => {
 }
 
 export const deletePostService = async (post: any) => {
-    await deleteFileFromCloudinary(
-        post.filePublicId,
-        post.fileResourceType
-    );
+    if (post.filePublicId) {
+        await deleteFileFromCloudinary(
+            post.filePublicId,
+            post.fileResourceType || "raw"
+        );
+    }
+
+    await mongoose.model("Notification").deleteMany({
+        postId: post._id
+    });
 
     await post.deleteOne();
 

@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { notificationApi } from "../../services/api"
 
-export type NotificationType = "like" | "comment"
+export type NotificationType =
+  | "like_post"
+  | "comment_post"
+  | "reply_comment"
+  | "like_comment"
 
 export type NotificationItem = {
   id: string
@@ -20,141 +25,117 @@ export type NotificationItem = {
   createdAt: number
 }
 
-const STORAGE_KEY = "nextcv_notifications"
+const resolveAvatar = (src?: string) => {
+  const value = (src ?? "").trim()
 
-const notificationsBus: {
-  listeners: Set<(n: NotificationItem) => void>
-  emit: (n: NotificationItem) => void
-} = {
-  listeners: new Set(),
-  emit(n) {
-    this.listeners.forEach((fn) => fn(n))
-  },
+  if (!value) return "/avatar/user.png"
+  if (value.startsWith("http")) return value
+  if (value.startsWith("blob:")) return value
+  if (value.startsWith("data:")) return value
+  if (value.startsWith("/avatar/")) return value
+
+  return `/avatar/${value.replace(/^\/+/, "")}`
 }
 
-export const pushNotification = (payload: Omit<NotificationItem, "id" | "isRead" | "createdAt">) => {
-  const item: NotificationItem = {
-    ...payload,
-    id: crypto.randomUUID(),
-    isRead: false,
-    createdAt: Date.now(),
-  }
-
-  const raw = localStorage.getItem(STORAGE_KEY)
-  const prev = raw ? (JSON.parse(raw) as NotificationItem[]) : []
-
-  const next = [item, ...prev]
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-
-  notificationsBus.emit(item)
+const safeText = (value: unknown) => {
+  return typeof value === "string" ? value.trim() : ""
 }
 
-const getStoredNotifications = (): NotificationItem[] | null => {
-  const raw = localStorage.getItem(STORAGE_KEY)
-  if (!raw) return null
-  try {
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed
-    return null
-  } catch {
-    return null
-  }
-}
-
-const seedMockNotifications = () => {
-  const existing = getStoredNotifications()
-  if (existing) return
-
-  const now = Date.now()
-  const mockItems: NotificationItem[] = [
-    {
-      id: "mock-1",
-      type: "like",
-      actor: {
-        id: "user-2",
-        fullName: "An Nguyen",
-        avatar: "https://i.pravatar.cc/100?img=1",
-      },
-      receiverId: "user-1",
-      postId: "post-1",
-      postTitle: "Mình đang build giao diện NextCV, tập trung vào clean UI và trải nghiệm mượt hơn.",
-      actionText: "đã thích bài viết của bạn",
-      isRead: false,
-      createdAt: now - 60000,
-    },
-    {
-      id: "mock-2",
-      type: "comment",
-      actor: {
-        id: "user-3",
-        fullName: "Bao Le",
-        avatar: "https://i.pravatar.cc/100?img=3",
-      },
-      receiverId: "user-1",
-      postId: "post-3",
-      commentId: "cmt-4",
-      postTitle: "Mình vừa deploy thử nghiệm, tốc độ load cải thiện rõ rệt.",
-      commentPreview: "Có thể share config cụ thể không?",
-      actionText: "đã bình luận về bài viết của bạn",
-      isRead: false,
-      createdAt: now - 120000,
-    },
-  ]
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(mockItems))
-}
-
-seedMockNotifications()
-
-export const useNotifications = (userId?: string) => {
+export const useNotifications = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
 
-  useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      try {
-        setNotifications(JSON.parse(raw))
-      } catch {
-        setNotifications([])
+  const fetchNotifications = useCallback(async () => {
+    const res = await notificationApi.getAll()
+    const list = res?.data?.notifications ?? []
+
+    const mapped: NotificationItem[] = list.map((n: any) => {
+      const fromUser = n.fromUserId ?? {}
+      const post = n.postId ?? {}
+      const comment = n.commentId ?? {}
+
+      const postId =
+        typeof n.postId === "object"
+          ? String(post._id ?? post.id ?? "")
+          : String(n.postId ?? "")
+
+      const commentId =
+        typeof n.commentId === "object"
+          ? String(comment._id ?? comment.id ?? "")
+          : n.commentId
+            ? String(n.commentId)
+            : undefined
+
+      const actorFullName = safeText(
+        fromUser.fullname || fromUser.fullName
+      )
+
+      const rawMessage = safeText(n.message)
+
+      const normalizedMessage = rawMessage.startsWith(actorFullName)
+        ? rawMessage.slice(actorFullName.length).trim()
+        : rawMessage
+
+      return {
+        id: String(n._id ?? n.id ?? ""),
+        type: n.type,
+        actor: {
+          id: String(fromUser._id ?? fromUser.id ?? ""),
+          fullName: actorFullName,
+          avatar: resolveAvatar(fromUser.avatar),
+        },
+        receiverId: String(n.userId ?? ""),
+        postId,
+        commentId,
+        postTitle:
+          safeText(n.postTitle) ||
+          safeText(post.title) ||
+          "",
+        commentPreview:
+          safeText(n.commentPreview) ||
+          safeText(comment.content) ||
+          "",
+        actionText: normalizedMessage,
+        isRead: Boolean(n.isRead),
+        createdAt: new Date(n.createdAt).getTime(),
       }
-    }
+    })
+
+    setNotifications(mapped)
+    setUnreadCount(res?.data?.unreadCount ?? 0)
   }, [])
 
   useEffect(() => {
-    const fn = (n: NotificationItem) => {
-      if (!userId || n.receiverId !== userId) return
-      setNotifications((prev) => [n, ...prev])
-    }
+    void fetchNotifications()
+  }, [fetchNotifications])
 
-    notificationsBus.listeners.add(fn)
-    return () => {
-      notificationsBus.listeners.delete(fn)
-    }
-  }, [userId])
+  const markAsRead = useCallback(async (id: string) => {
+    await notificationApi.markAsRead(id)
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications))
-  }, [notifications])
-
-  const markAsRead = useCallback((id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     )
+
+    setUnreadCount((prev) => Math.max(prev - 1, 0))
   }, [])
 
-  const markAllAsRead = useCallback(() => {
+  const markAllAsRead = useCallback(async () => {
+    await notificationApi.markAllAsRead()
+
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
+    setUnreadCount(0)
   }, [])
 
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.isRead).length,
+  const sortedNotifications = useMemo(
+    () => [...notifications].sort((a, b) => b.createdAt - a.createdAt),
     [notifications]
   )
 
   return {
-    notifications,
+    notifications: sortedNotifications,
     unreadCount,
     markAsRead,
     markAllAsRead,
+    refetch: fetchNotifications,
   }
 }

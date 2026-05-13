@@ -1,14 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import { useAuth } from "../../contexts/AuthContext"
 import {
+  commentApi,
   informationApi,
   postApi,
   type InformationProfile,
 } from "../../services/api"
 
-import type { PostItem, User } from "../../types/post"
+import type { Attachment } from "../../utils/file"
+import type { CommentItem, PostItem, User } from "../../types/post"
 
 import {
   buildPasswordStrength,
@@ -16,7 +18,7 @@ import {
   validatePasswordForm,
   type ChangePasswordErrors,
   type ChangePasswordFormState,
-  type EditInformationErrors,
+  type EditInformationField,
   type EditInformationFormState,
 } from "./validation"
 
@@ -46,15 +48,65 @@ const emptyInformation: InformationData = {
 
 const resolveAvatarSource = (src?: string) => {
   const value = (src ?? "").trim()
+
   if (!value) return "/avatar/user.png"
+  if (value === "user.png") return "/avatar/user.png"
+  if (value.endsWith("/user.png")) return "/avatar/user.png"
   if (value.startsWith("http")) return value
   if (value.startsWith("blob:")) return value
   if (value.startsWith("data:")) return value
   if (value.startsWith("/avatar/")) return value
+
   return `/avatar/${value.replace(/^\/+/, "")}`
 }
 
-const buildEditForm = (information: InformationData): EditInformationFormState => ({
+const resolveAttachmentKind = (kind?: string, fileName?: string) => {
+  const value = `${kind ?? ""} ${fileName ?? ""}`.toLowerCase()
+
+  if (value.includes("pdf")) return "pdf"
+
+  if (
+    value.includes("doc") ||
+    value.includes("word") ||
+    value.includes("msword") ||
+    value.includes("officedocument.wordprocessingml") ||
+    value.endsWith(".doc") ||
+    value.endsWith(".docx")
+  ) {
+    return "word"
+  }
+
+  return "image"
+}
+
+const getLikedStorageKey = (userId: string) => `nextcv_liked_posts_${userId}`
+
+const readLikedPostIds = (userId: string) => {
+  try {
+    const raw = localStorage.getItem(getLikedStorageKey(userId))
+    if (!raw) return new Set<string>()
+
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return new Set<string>()
+
+    return new Set(parsed.map((item) => String(item)))
+  } catch {
+    return new Set<string>()
+  }
+}
+
+const writeLikedPostIds = (userId: string, ids: Set<string>) => {
+  try {
+    localStorage.setItem(
+      getLikedStorageKey(userId),
+      JSON.stringify(Array.from(ids))
+    )
+  } catch {}
+}
+
+const buildEditForm = (
+  information: InformationData
+): EditInformationFormState => ({
   email: information.email ?? "",
   fullName: information.fullName ?? "",
   phone: information.phone ?? "",
@@ -62,7 +114,9 @@ const buildEditForm = (information: InformationData): EditInformationFormState =
   avatar: information.avatar ?? "",
 })
 
-const mapProfileToInformation = (profile: InformationProfile): InformationData => {
+const mapProfileToInformation = (
+  profile: InformationProfile
+): InformationData => {
   const resolvedId = (profile as any)._id || (profile as any).id || ""
 
   return {
@@ -77,16 +131,53 @@ const mapProfileToInformation = (profile: InformationProfile): InformationData =
   }
 }
 
-export const useInformationPage = (id?: string) => {
-  const { user: authUser } = useAuth()
+const mapComment = (c: any): CommentItem => {
+  const userId = c.userId ?? c.user ?? {}
 
-  const [information, setInformation] = useState<InformationData>(emptyInformation)
+  const attachment: Attachment | undefined = c.attachment
+    ? {
+        name: String(c.attachment.name ?? ""),
+        url: String(c.attachment.url ?? ""),
+        kind: resolveAttachmentKind(
+          c.attachment.kind ?? c.attachment.type,
+          c.attachment.name
+        ),
+      }
+    : c.fileUrl
+      ? {
+          name: String(c.fileName ?? ""),
+          url: String(c.fileUrl ?? ""),
+          kind: resolveAttachmentKind(c.fileType, c.fileName),
+        }
+      : undefined
+
+  return {
+    id: String(c.id ?? c._id ?? ""),
+    user: {
+      id: String(userId.id ?? userId._id ?? ""),
+      fullName: String(userId.fullName ?? userId.fullname ?? ""),
+      avatar: resolveAvatarSource(userId.avatar),
+      email: userId.email,
+    },
+    content: String(c.content ?? ""),
+    createdAt: String(c.createdAt ?? ""),
+    attachment,
+  }
+}
+
+export const useInformationPage = (id?: string) => {
+  const { user: authUser, setUser } = useAuth()
+
+  const [information, setInformation] = useState<InformationData>(
+    emptyInformation
+  )
   const [informationPosts, setInformationPosts] = useState<PostItem[]>([])
 
   const [editOpen, setEditOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [previewSrc, setPreviewSrc] = useState("")
   const [submitted, setSubmitted] = useState(false)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
 
   const profileId = id || authUser?.id
 
@@ -94,10 +185,17 @@ export const useInformationPage = (id?: string) => {
     () => ({
       id: authUser?.id ?? "",
       fullName: authUser?.fullName ?? "",
-      avatar: authUser?.avatar ?? "",
+      avatar: authUser?.avatar ?? "/avatar/user.png",
     }),
     [authUser]
   )
+
+  const activeUser = authUser && authUser.id ? authUser : null
+
+  const likedPostIds = useMemo(() => {
+    if (!activeUser?.id) return new Set<string>()
+    return readLikedPostIds(activeUser.id)
+  }, [activeUser?.id])
 
   const canEditInformation =
     authUser?.id && information.postOwnerId
@@ -115,7 +213,9 @@ export const useInformationPage = (id?: string) => {
     confirmPassword: "",
   })
 
-  const [passwordErrors, setPasswordErrors] = useState<ChangePasswordErrors>({})
+  const [passwordErrors, setPasswordErrors] = useState<ChangePasswordErrors>(
+    {}
+  )
 
   const currentErrors = useMemo(() => validateEditForm(editForm), [editForm])
   const displayErrors = submitted ? currentErrors : {}
@@ -124,8 +224,6 @@ export const useInformationPage = (id?: string) => {
     () => JSON.stringify(editForm) !== JSON.stringify(editInitialForm),
     [editForm, editInitialForm]
   )
-
-  const avatarFileRef = useRef<File | null>(null)
 
   const canUpdate = isDirty && Object.keys(currentErrors).length === 0
 
@@ -143,7 +241,7 @@ export const useInformationPage = (id?: string) => {
         const form = buildEditForm(data)
         setEditForm(form)
         setEditInitialForm(form)
-        avatarFileRef.current = null
+        setAvatarFile(null)
       } catch (e: any) {
         toast.error(e?.response?.data?.message || "Lỗi load info")
       }
@@ -158,14 +256,81 @@ export const useInformationPage = (id?: string) => {
     const loadPosts = async () => {
       try {
         const res = await postApi.getPosts(1, PAGE_SIZE, profileId)
-        setInformationPosts(res.data ?? [])
+        const rawPosts = Array.isArray(res.data) ? res.data : []
+
+        const nextPostsBase: PostItem[] = rawPosts.map((p: any) => {
+          const postId = String(p.id ?? p._id ?? "")
+
+          return {
+            id: postId,
+            user: {
+              id: String(p.user?.id ?? p.userId?._id ?? ""),
+              fullName: String(p.user?.fullName ?? p.userId?.fullname ?? ""),
+              avatar: resolveAvatarSource(
+                p.user?.avatar ?? p.userId?.avatar ?? p.avatar
+              ),
+              email: p.user?.email,
+            },
+            title: String(p.title ?? ""),
+            createdAt: String(p.createdAt ?? ""),
+            attachment: p.attachment
+              ? {
+                  name: String(p.attachment.name ?? ""),
+                  url: String(p.attachment.url ?? ""),
+                  kind: resolveAttachmentKind(
+                    p.attachment.kind,
+                    p.attachment.name
+                  ),
+                }
+              : p.fileUrl
+                ? {
+                    name: String(p.fileName ?? ""),
+                    url: String(p.fileUrl ?? ""),
+                    kind: resolveAttachmentKind(p.fileType, p.fileName),
+                  }
+                : undefined,
+            liked: activeUser
+              ? typeof p.liked === "boolean"
+                ? p.liked || likedPostIds.has(postId)
+                : likedPostIds.has(postId)
+              : false,
+            likes:
+              typeof p.likes === "number"
+                ? p.likes
+                : Array.isArray(p.likes)
+                  ? p.likes.length
+                  : 0,
+            comments: [],
+          }
+        })
+
+        const postsWithComments = await Promise.all(
+          nextPostsBase.map(async (post) => {
+            try {
+              const commentRes = await commentApi.getByPost(post.id)
+              const rawComments = commentRes?.data?.comments
+              const comments = Array.isArray(rawComments)
+                ? rawComments.map(mapComment)
+                : []
+
+              return {
+                ...post,
+                comments,
+              }
+            } catch {
+              return post
+            }
+          })
+        )
+
+        setInformationPosts(postsWithComments)
       } catch {
         setInformationPosts([])
       }
     }
 
     loadPosts()
-  }, [profileId])
+  }, [profileId, activeUser, likedPostIds])
 
   const openEditModal = useCallback(() => {
     const form = buildEditForm(information)
@@ -173,7 +338,6 @@ export const useInformationPage = (id?: string) => {
     setEditInitialForm(form)
     setSubmitted(false)
     setEditOpen(true)
-    avatarFileRef.current = null
   }, [information])
 
   const closeEditModal = useCallback(() => setEditOpen(false), [])
@@ -187,23 +351,17 @@ export const useInformationPage = (id?: string) => {
     setEditOpen(true)
   }, [])
 
-  const setField = (field: any, value: string) => {
+  const setField = (field: EditInformationField, value: string) => {
     setEditForm((prev) => ({ ...prev, [field]: value }))
   }
 
   const setAvatar = (file: File | null) => {
     if (!file) return
 
-    avatarFileRef.current = file
+    setAvatarFile(file)
 
     const url = URL.createObjectURL(file)
-
-    setEditForm((prev) => {
-      if (prev.avatar?.startsWith("blob:")) {
-        URL.revokeObjectURL(prev.avatar)
-      }
-      return { ...prev, avatar: url }
-    })
+    setEditForm((prev) => ({ ...prev, avatar: url }))
   }
 
   const handleUpdateInformation = async () => {
@@ -217,24 +375,37 @@ export const useInformationPage = (id?: string) => {
       formData.append("phone", editForm.phone)
       formData.append("about", editForm.about)
 
-      if (avatarFileRef.current) {
-        formData.append("avatar", avatarFileRef.current)
+      if (avatarFile) {
+        formData.append("avatar", avatarFile)
       }
 
       const res = await informationApi.updateMyInformation(formData)
+      if (!res.data) return
 
-      if (avatarFileRef.current) {
-        avatarFileRef.current = null
-      }
-
-      const updated = {
-        ...information,
-        ...editForm,
-        avatar: res.data?.avatar || editForm.avatar,
-      }
+      const updated = mapProfileToInformation(res.data)
 
       setInformation(updated)
-      setEditInitialForm(editForm)
+
+      const form = buildEditForm(updated)
+      setEditForm(form)
+      setEditInitialForm(form)
+
+      setAvatarFile(null)
+
+      if (authUser) {
+        setUser((prev) => {
+          if (!prev) return prev
+
+          return {
+            ...prev,
+            fullName: updated.fullName,
+            avatar: updated.avatar,
+            phone: updated.phone,
+            bio: updated.about,
+          }
+        })
+      }
+
       setEditOpen(false)
 
       toast.success("Cập nhật thành công")
@@ -243,7 +414,10 @@ export const useInformationPage = (id?: string) => {
     }
   }
 
-  const setPasswordField = (field: any, value: string) => {
+  const setPasswordField = (
+    field: keyof ChangePasswordFormState,
+    value: string
+  ) => {
     setPasswordForm((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -260,6 +434,7 @@ export const useInformationPage = (id?: string) => {
         confirmPassword: "",
       })
       setPasswordOpen(false)
+      setEditOpen(true)
       toast.success("Đổi mật khẩu thành công")
     } catch (e: any) {
       setPasswordErrors({
@@ -268,32 +443,170 @@ export const useInformationPage = (id?: string) => {
     }
   }
 
+  const handleToggleLike = useCallback(
+    async (postId: string) => {
+      if (!activeUser) return
+
+      try {
+        const res = await postApi.likePost(postId)
+
+        setInformationPosts((prev) =>
+          prev.map((post) => {
+            if (String(post.id) !== String(postId)) return post
+
+            return {
+              ...post,
+              liked: res.liked,
+              likes: res.likesCount,
+            } as PostItem
+          })
+        )
+
+        const nextIds = new Set(likedPostIds)
+        if (res.liked) {
+          nextIds.add(postId)
+        } else {
+          nextIds.delete(postId)
+        }
+        writeLikedPostIds(activeUser.id, nextIds)
+      } catch (e: any) {
+        toast.error(
+          e?.response?.data?.message || "Không thể cập nhật lượt thích"
+        )
+      }
+    },
+    [activeUser, likedPostIds]
+  )
+
+  const handleDeletePost = useCallback(
+    async (postId: string) => {
+      if (!activeUser) return
+
+      try {
+        await postApi.deletePost(postId)
+
+        setInformationPosts((prev) =>
+          prev.filter((post) => String(post.id) !== String(postId))
+        )
+
+        if (activeUser.id) {
+          const nextIds = new Set(likedPostIds)
+          nextIds.delete(postId)
+          writeLikedPostIds(activeUser.id, nextIds)
+        }
+      } catch (e: any) {
+        toast.error(e?.response?.data?.message || "Không thể xóa bài viết")
+      }
+    },
+    [activeUser, likedPostIds]
+  )
+
+  const handleUpdatePost = useCallback(
+    async (postId: string, title: string) => {
+      if (!activeUser) return
+
+      try {
+        await postApi.updatePost(postId, title)
+
+        setInformationPosts((prev) =>
+          prev.map((post) => {
+            if (String(post.id) !== String(postId)) return post
+            return { ...post, title } as PostItem
+          })
+        )
+      } catch (e: any) {
+        toast.error(e?.response?.data?.message || "Không thể cập nhật bài viết")
+      }
+    },
+    [activeUser]
+  )
+
+  const handleAddComment = useCallback(
+    async (postId: string, payload: { content: string; file: File | null }) => {
+      if (!activeUser) return
+
+      try {
+        const formData = new FormData()
+        formData.append("content", payload.content)
+        if (payload.file) formData.append("file", payload.file)
+
+        const res = await commentApi.create(postId, formData)
+        const newComment = mapComment(res.data)
+
+        setInformationPosts((prev) =>
+          prev.map((post) =>
+            String(post.id) !== String(postId)
+              ? post
+              : {
+                  ...post,
+                  comments: [...post.comments, newComment],
+                }
+          )
+        )
+      } catch (e: any) {
+        toast.error(e?.response?.data?.message || "Không thể bình luận")
+      }
+    },
+    [activeUser]
+  )
+
+  const handleUpdateComment = useCallback(
+    async (postId: string, commentId: string, content: string) => {
+      if (!activeUser) return
+
+      try {
+        const res = await commentApi.update(commentId, content)
+        const updatedComment = mapComment(res.data)
+
+        setInformationPosts((prev) =>
+          prev.map((post) =>
+            String(post.id) !== String(postId)
+              ? post
+              : {
+                  ...post,
+                  comments: post.comments.map((comment) =>
+                    String(comment.id) === String(commentId)
+                      ? updatedComment
+                      : comment
+                  ),
+                }
+          )
+        )
+      } catch (e: any) {
+        toast.error(e?.response?.data?.message || "Không thể sửa bình luận")
+      }
+    },
+    [activeUser]
+  )
+
+  const handleDeleteComment = useCallback(
+    async (postId: string, commentId: string) => {
+      if (!activeUser) return
+
+      try {
+        await commentApi.delete(commentId)
+
+        setInformationPosts((prev) =>
+          prev.map((post) =>
+            String(post.id) !== String(postId)
+              ? post
+              : {
+                  ...post,
+                  comments: post.comments.filter(
+                    (comment) => String(comment.id) !== String(commentId)
+                  ),
+                }
+          )
+        )
+      } catch (e: any) {
+        toast.error(e?.response?.data?.message || "Không thể xóa bình luận")
+      }
+    },
+    [activeUser]
+  )
+
   const openPreview = (src: string) => setPreviewSrc(src)
   const closePreview = () => setPreviewSrc("")
-
-  const handleToggleLike = useCallback((postId: string) => {
-    setInformationPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 }
-          : p
-      )
-    )
-  }, [])
-
-  const handleDeletePost = useCallback((postId: string) => {
-    setInformationPosts((prev) => prev.filter((p) => p.id !== postId))
-  }, [])
-
-  const handleUpdatePost = useCallback((postId: string, title: string) => {
-    setInformationPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, title } : p))
-    )
-  }, [])
-
-  const handleAddComment = useCallback(() => {}, [])
-  const handleUpdateComment = useCallback(() => {}, [])
-  const handleDeleteComment = useCallback(() => {}, [])
 
   return {
     information,

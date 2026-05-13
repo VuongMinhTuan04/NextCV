@@ -8,6 +8,7 @@ type Item = {
   icon: LucideIcon
   onClick: () => void
   destructive?: boolean
+  className?: string
 }
 
 type Props = {
@@ -37,17 +38,19 @@ const DropdownMenu = ({
           {items.map((item) => {
             const Icon = item.icon
 
-            const itemClass = item.destructive
+            const baseClass = item.destructive
               ? "text-red-500 hover:bg-red-50 hover:text-red-600"
               : "text-amber-500 hover:bg-amber-50 hover:text-amber-600"
 
             return (
-              <button key={item.label} type="button"
+              <button
+                key={item.label}
+                type="button"
                 onClick={() => {
                   item.onClick()
                   close()
                 }}
-                className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${itemClass}`}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${baseClass} ${item.className || ""}`}
               >
                 <Icon className="h-4 w-4" />
                 <span>{item.label}</span>

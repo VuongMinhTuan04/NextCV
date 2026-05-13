@@ -2,7 +2,7 @@ import type { ImgHTMLAttributes } from "react"
 
 type AvatarProps = {
   src?: string
-  alt: string
+  alt?: string
   size?: "sm" | "md" | "lg"
 } & Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "alt">
 
@@ -13,8 +13,11 @@ const sizeMap = {
 }
 
 const Avatar = ({ src, alt, size = "md", className = "", ...rest }: AvatarProps) => {
-  const initials = alt
+  const safeAlt = alt || ""
+
+  const initials = safeAlt
     .split(" ")
+    .filter(Boolean)
     .map((word) => word[0])
     .slice(0, 2)
     .join("")
@@ -22,16 +25,21 @@ const Avatar = ({ src, alt, size = "md", className = "", ...rest }: AvatarProps)
 
   if (!src) {
     return (
-      <div className={`${sizeMap[size]} ${className} grid place-items-center rounded-full bg-slate-200 text-xs
-        font-semibold text-slate-600`}
+      <div
+        className={`${sizeMap[size]} ${className} grid place-items-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600`}
       >
-        {initials}
+        {initials || "U"}
       </div>
     )
   }
 
   return (
-    <img src={src} alt={alt} className={`${sizeMap[size]} ${className} rounded-full object-cover`} {...rest} />
+    <img
+      src={src}
+      alt={safeAlt || "User"}
+      className={`${sizeMap[size]} ${className} rounded-full object-cover`}
+      {...rest}
+    />
   )
 }
 

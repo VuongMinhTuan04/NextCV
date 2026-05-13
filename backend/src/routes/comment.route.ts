@@ -14,6 +14,7 @@ import {
 import { validateObjectId } from "../middlewares/validateMongoId.middleware";
 import { authentication } from "../middlewares/auth.middleware";
 import { loadPost } from "../middlewares/validatePost.middleware";
+import { upload } from "../middlewares/upload.middleware";
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ router.post(
     authentication,
     validateObjectId("postId"),
     loadPost("postId"),
+    upload.single("file"),
     validateInputComment,
     createCommentController
 );

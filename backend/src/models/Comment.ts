@@ -12,26 +12,40 @@ const commentSchema = new mongoose.Schema(
             ref: "User",
             required: true
         },
-        parentCommentId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Comment",
-            default: null,
-            index: true
-        },
         content: {
             type: String,
             required: true,
             maxLength: 255,
             trim: true
         },
-        likes: {
-            type: [
-                {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "User"
-                }
-            ],
-            default: []
+        attachment: {
+            name: String,
+            url: String,
+            publicId: String,
+            resourceType: String,
+            kind: String
+        },
+        fileName: {
+            type: String,
+            default: ""
+        },
+        fileUrl: {
+            type: String,
+            default: ""
+        },
+        filePublicId: {
+            type: String,
+            default: ""
+        },
+        fileResourceType: {
+            type: String,
+            enum: ["image", "raw"],
+            default: "raw"
+        },
+        fileType: {
+            type: String,
+            enum: ["image", "pdf", "doc"],
+            default: "image"
         },
         isEdited: {
             type: Boolean,

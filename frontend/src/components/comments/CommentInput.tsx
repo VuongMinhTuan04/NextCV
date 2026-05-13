@@ -7,7 +7,7 @@ import {
   X,
 } from "lucide-react"
 
-import type { User } from "../../services/mockPosts"
+import type { User } from "../../types/post"
 import type { AttachmentKind } from "../../utils/file"
 
 import Avatar from "../commons/Avatar"
@@ -26,6 +26,18 @@ type Props = {
   onSend: () => void
 }
 
+const resolveAvatar = (src?: string) => {
+  const value = (src ?? "").trim()
+
+  if (!value) return "/avatar/user.png"
+  if (value.startsWith("http")) return value
+  if (value.startsWith("blob:")) return value
+  if (value.startsWith("data:")) return value
+  if (value.startsWith("/avatar/")) return value
+
+  return `/avatar/${value.replace(/^\/+/, "")}`
+}
+
 const CommentInput = ({
   currentUser,
   value,
@@ -38,18 +50,14 @@ const CommentInput = ({
   onRemoveFile,
   onSend,
 }: Props) => {
-  const fileInputRef =
-    useRef<HTMLInputElement | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const openFilePicker = () => {
     fileInputRef.current?.click()
   }
 
-  const handleFileChange = (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
-    const nextFile =
-      event.target.files?.[0] ?? null
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextFile = event.target.files?.[0] ?? null
 
     onSelectFile(nextFile)
     event.target.value = ""
@@ -78,26 +86,18 @@ const CommentInput = ({
       ? "text-rose-700"
       : "text-sky-700"
 
-  const avatarSrc =
-    currentUser.avatar?.startsWith("http")
-      ? currentUser.avatar
-      : `/avatar/${currentUser.avatar || "user.png"}`
+  const avatarSrc = resolveAvatar(currentUser.avatar)
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-3">
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-        <Avatar
-          src={avatarSrc}
-          alt={currentUser.fullName}
-        />
+        <Avatar src={avatarSrc} alt={currentUser.fullName} />
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
           <div className="flex items-center gap-2">
             <AutoResizeTextarea
               value={value}
-              onChange={(event) =>
-                onChange(event.target.value)
-              }
+              onChange={(event) => onChange(event.target.value)}
               placeholder="Viết bình luận..."
               className="max-h-44 min-h-[40px] w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
             />
@@ -140,9 +140,7 @@ const CommentInput = ({
                 <Icon className="h-4 w-4" />
               </div>
 
-              <span
-                className={`truncate text-sm font-medium ${textClass}`}
-              >
+              <span className={`truncate text-sm font-medium ${textClass}`}>
                 {fileName}
               </span>
             </div>

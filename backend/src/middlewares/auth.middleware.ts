@@ -165,6 +165,14 @@ export const validateInputResetPassword = async (req: Request, res: Response, ne
             return res.status(400).json({ message: "Invalid email format" });
         }
 
+        if (!code) {
+            return res.status(400).json({ message: "Code is required" });
+        }
+
+        if (!/^\d{6}$/.test(String(code).trim())) {
+            return res.status(400).json({ message: "Code must be 6 digits" });
+        }
+
         if (!newPassword) {
             return res.status(400).json({ message: "New password is required" });
         }

@@ -3,22 +3,35 @@ import { Link, useNavigate } from "react-router-dom"
 import { Mail, Lock, Send, ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
 
+import { authApi } from "../../services/api"
+
+type ForgotPasswordErrors = {
+  email?: string
+  code?: string
+  newPassword?: string
+  confirmPassword?: string
+}
+
 const ForgotPassword = () => {
   const navigate = useNavigate()
+
   const [step, setStep] = useState(1)
   const [email, setEmail] = useState("")
   const [code, setCode] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<ForgotPasswordErrors>({})
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const emailRegex = /^[^\s@]+@gmail\.com$/i
-  const mockCode = "123456"
+  const [isSendingCode, setIsSendingCode] = useState(false)
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false)
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
 
-  const handleSendCode = () => {
-    const newErrors: typeof errors = {}
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  const handleSendCode = async () => {
+    const newErrors: ForgotPasswordErrors = {}
     const trimmedEmail = email.trim()
 
     if (!trimmedEmail) {
@@ -32,18 +45,30 @@ const ForgotPassword = () => {
       return
     }
 
-    toast.success("Gửi mã xác nhận thành công", { duration: 1000 })
-    setErrors({})
-    setStep(2)
+    try {
+      setIsSendingCode(true)
+      await authApi.sendForgotPasswordCode(trimmedEmail)
+      setErrors({})
+      setStep(2)
+      toast.success("Gửi mã xác nhận thành công", { duration: 1000 })
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Gửi mã thất bại"
+      setErrors({ email: message })
+      toast.error(message, { duration: 1000 })
+    } finally {
+      setIsSendingCode(false)
+    }
   }
 
-  const handleVerifyCode = () => {
-    const newErrors: typeof errors = {}
+  const handleVerifyCode = async () => {
+    const newErrors: ForgotPasswordErrors = {}
+    const trimmedEmail = email.trim()
+    const trimmedCode = code.trim()
 
-    if (!code.trim()) {
+    if (!trimmedCode) {
       newErrors.code = "Vui lòng nhập mã xác nhận"
-    } else if (code.trim() !== mockCode) {
-      newErrors.code = "Mã xác nhận không đúng"
+    } else if (!/^\d{6}$/.test(trimmedCode)) {
+      newErrors.code = "Mã xác nhận phải gồm 6 số"
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -51,13 +76,25 @@ const ForgotPassword = () => {
       return
     }
 
-    setErrors({})
-    setStep(3)
+    try {
+      setIsVerifyingCode(true)
+      await authApi.verifyForgotPasswordCode(trimmedEmail, trimmedCode)
+      setErrors({})
+      setStep(3)
+      toast.success("Xác nhận mã thành công", { duration: 1000 })
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Mã xác nhận không đúng"
+      setErrors({ code: message })
+      toast.error(message, { duration: 1000 })
+    } finally {
+      setIsVerifyingCode(false)
+    }
   }
 
-  const handleChangePassword = () => {
-    const newErrors: typeof errors = {}
+  const handleChangePassword = async () => {
+    const newErrors: ForgotPasswordErrors = {}
     const trimmedNewPassword = newPassword.trim()
+    const trimmedConfirmPassword = confirmPassword.trim()
     const hasVietnameseDiacritics = /[^\x00-\x7F]/.test(newPassword)
 
     if (!trimmedNewPassword) {
@@ -70,9 +107,9 @@ const ForgotPassword = () => {
       newErrors.newPassword = "Mật khẩu không hợp lệ"
     }
 
-    if (!confirmPassword.trim()) {
+    if (!trimmedConfirmPassword) {
       newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu"
-    } else if (confirmPassword !== newPassword) {
+    } else if (trimmedConfirmPassword !== trimmedNewPassword) {
       newErrors.confirmPassword = "Mật khẩu xác nhận không khớp"
     }
 
@@ -81,8 +118,26 @@ const ForgotPassword = () => {
       return
     }
 
-    toast.success("Đổi mật khẩu thành công", { duration: 1000 })
-    navigate("/signin")
+    try {
+      setIsResettingPassword(true)
+      await authApi.resetForgotPassword(
+        email.trim(),
+        code.trim(),
+        trimmedNewPassword,
+        trimmedConfirmPassword
+      )
+      setErrors({})
+      toast.success("Đổi mật khẩu thành công", { duration: 1000 })
+      navigate("/sign-in")
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Đổi mật khẩu thất bại"
+      setErrors({
+        newPassword: message,
+      })
+      toast.error(message, { duration: 1000 })
+    } finally {
+      setIsResettingPassword(false)
+    }
   }
 
   return (
@@ -108,7 +163,7 @@ const ForgotPassword = () => {
                   setErrors((prev) => ({ ...prev, email: "" }))
                 }}
                 placeholder="example@gmail.com"
-                className={`w-full rounded-xl border py-3 px-4 text-sm outline-none transition ${
+                className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition ${
                   errors.email
                     ? "border-rose-300 bg-rose-50/60 focus:border-rose-400"
                     : "border-slate-200 bg-slate-50 focus:border-blue-300"
@@ -127,10 +182,11 @@ const ForgotPassword = () => {
             <button
               type="button"
               onClick={handleSendCode}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer"
+              disabled={isSendingCode}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
             >
               <Send className="h-5 w-5" />
-              Gửi mã
+              {isSendingCode ? "Đang gửi..." : "Gửi mã"}
             </button>
           </div>
         )}
@@ -151,7 +207,7 @@ const ForgotPassword = () => {
                 }}
                 placeholder="Nhập mã 6 số"
                 maxLength={6}
-                className={`w-full rounded-xl border py-3 px-4 text-sm outline-none transition ${
+                className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition ${
                   errors.code
                     ? "border-rose-300 bg-rose-50/60 focus:border-rose-400"
                     : "border-slate-200 bg-slate-50 focus:border-blue-300"
@@ -170,9 +226,10 @@ const ForgotPassword = () => {
             <button
               type="button"
               onClick={handleVerifyCode}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer"
+              disabled={isVerifyingCode}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
             >
-              Xác nhận
+              {isVerifyingCode ? "Đang xác nhận..." : "Xác nhận"}
             </button>
 
             <button
@@ -261,9 +318,10 @@ const ForgotPassword = () => {
             <button
               type="button"
               onClick={handleChangePassword}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer"
+              disabled={isResettingPassword}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
             >
-              Đổi mật khẩu
+              {isResettingPassword ? "Đang đổi..." : "Đổi mật khẩu"}
             </button>
           </div>
         )}

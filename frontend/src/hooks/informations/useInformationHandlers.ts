@@ -1,7 +1,11 @@
-import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from "react"
+import {
+  useCallback,
+  type Dispatch,
+  type MutableRefObject,
+  type SetStateAction,
+} from "react"
 import { toast } from "sonner"
 import { informationApi } from "../../services/api"
-import { pushNotification } from "../notifications/useNotifications"
 
 import type { InformationData } from "./useInformationPage"
 import type { PostItem, User } from "../../types/post"
@@ -95,7 +99,10 @@ export const useInformationHandlers = ({
     setEditInitialForm(nextForm)
     setEditOpen(false)
 
-    if (previousAvatar !== nextInformation.avatar && previousAvatar.startsWith("blob:")) {
+    if (
+      previousAvatar !== nextInformation.avatar &&
+      previousAvatar.startsWith("blob:")
+    ) {
       URL.revokeObjectURL(previousAvatar)
     }
 
@@ -151,55 +158,46 @@ export const useInformationHandlers = ({
     setPasswordOpen,
   ])
 
-  const handleToggleLike = useCallback((postId: string) => {
-    setInformationPosts((prev) => {
-      const nextPosts = prev.map((post) => {
-        if (String(post.id) !== String(postId)) return post
+  const handleToggleLike = useCallback(
+    (postId: string) => {
+      setInformationPosts((prev) =>
+        prev.map((post) => {
+          if (String(post.id) !== String(postId)) return post
 
-        const wasLiked = post.liked
-        const currentLikes = post.likes ?? 0
+          const wasLiked = post.liked
+          const currentLikes = post.likes ?? 0
 
-        return {
-          ...post,
-          liked: !wasLiked,
-          likes: wasLiked ? Math.max(0, currentLikes - 1) : currentLikes + 1,
-        } as PostItem
-      })
-
-      const targetPost = prev.find((p) => String(p.id) === String(postId))
-      if (targetPost && !targetPost.liked && viewerUser.id !== targetPost.user.id) {
-        pushNotification({
-          type: "like",
-          actor: {
-            id: viewerUser.id,
-            fullName: viewerUser.fullName,
-            avatar: viewerUser.avatar,
-          },
-          receiverId: targetPost.user.id,
-          postId: targetPost.id,
-          postTitle: targetPost.title || targetPost.user.fullName,
-          actionText: "đã thích bài viết của bạn",
+          return {
+            ...post,
+            liked: !wasLiked,
+            likes: wasLiked ? Math.max(0, currentLikes - 1) : currentLikes + 1,
+          } as PostItem
         })
-      }
+      )
+    },
+    [setInformationPosts]
+  )
 
-      return nextPosts
-    })
-  }, [viewerUser, setInformationPosts])
+  const handleDeletePost = useCallback(
+    (postId: string) => {
+      setInformationPosts((prev) =>
+        prev.filter((post) => String(post.id) !== String(postId))
+      )
+    },
+    [setInformationPosts]
+  )
 
-  const handleDeletePost = useCallback((postId: string) => {
-    setInformationPosts((prev) =>
-      prev.filter((post) => String(post.id) !== String(postId))
-    )
-  }, [setInformationPosts])
-
-  const handleUpdatePost = useCallback((postId: string, title: string) => {
-    setInformationPosts((prev) =>
-      prev.map((post) => {
-        if (String(post.id) !== String(postId)) return post
-        return { ...post, title } as PostItem
-      })
-    )
-  }, [setInformationPosts])
+  const handleUpdatePost = useCallback(
+    (postId: string, title: string) => {
+      setInformationPosts((prev) =>
+        prev.map((post) => {
+          if (String(post.id) !== String(postId)) return post
+          return { ...post, title } as PostItem
+        })
+      )
+    },
+    [setInformationPosts]
+  )
 
   const handleAddComment = useCallback(
     (postId: string, payload: { content: string; file: File | null }) => {
@@ -237,24 +235,6 @@ export const useInformationHandlers = ({
           } as PostItem
         })
 
-        const targetPost = prev.find((p) => String(p.id) === String(postId))
-        if (targetPost && viewerUser.id !== targetPost.user.id) {
-          pushNotification({
-            type: "comment",
-            actor: {
-              id: viewerUser.id,
-              fullName: viewerUser.fullName,
-              avatar: viewerUser.avatar,
-            },
-            receiverId: targetPost.user.id,
-            postId: targetPost.id,
-            commentId: undefined,
-            postTitle: targetPost.title || targetPost.user.fullName,
-            commentPreview: payload.content.substring(0, 100),
-            actionText: "đã bình luận về bài viết của bạn",
-          })
-        }
-
         return nextPosts
       })
     },
@@ -285,32 +265,35 @@ export const useInformationHandlers = ({
     [setInformationPosts]
   )
 
-  const handleDeleteComment = useCallback((postId: string, commentId: string) => {
-    setInformationPosts((prev) =>
-      prev.map((post) => {
-        if (String(post.id) !== String(postId)) return post
+  const handleDeleteComment = useCallback(
+    (postId: string, commentId: string) => {
+      setInformationPosts((prev) =>
+        prev.map((post) => {
+          if (String(post.id) !== String(postId)) return post
 
-        const currentComments = Array.isArray((post as PostLikeShape).comments)
-          ? ((post as PostLikeShape).comments as PostComment[])
-          : []
+          const currentComments = Array.isArray((post as PostLikeShape).comments)
+            ? ((post as PostLikeShape).comments as PostComment[])
+            : []
 
-        const targetComment = currentComments.find(
-          (comment) => String(comment.id) === String(commentId)
-        )
+          const targetComment = currentComments.find(
+            (comment) => String(comment.id) === String(commentId)
+          )
 
-        if (targetComment?.attachment?.url?.startsWith("blob:")) {
-          URL.revokeObjectURL(targetComment.attachment.url)
-        }
+          if (targetComment?.attachment?.url?.startsWith("blob:")) {
+            URL.revokeObjectURL(targetComment.attachment.url)
+          }
 
-        return {
-          ...post,
-          comments: currentComments.filter(
-            (comment) => String(comment.id) !== String(commentId)
-          ),
-        } as PostItem
-      })
-    )
-  }, [setInformationPosts])
+          return {
+            ...post,
+            comments: currentComments.filter(
+              (comment) => String(comment.id) !== String(commentId)
+            ),
+          } as PostItem
+        })
+      )
+    },
+    [setInformationPosts]
+  )
 
   return {
     handleUpdateInformation,

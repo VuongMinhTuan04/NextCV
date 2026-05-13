@@ -28,6 +28,7 @@ type LoginResult = {
 type AuthContextValue = {
   user: AuthUser | null
   isAuthenticated: boolean
+  hydrated: boolean
   login: (
     email: string,
     password: string,
@@ -188,6 +189,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     () => ({
       user,
       isAuthenticated: Boolean(user),
+      hydrated,
       login,
       logout,
       setUser,

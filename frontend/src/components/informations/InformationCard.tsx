@@ -62,8 +62,8 @@ const InformationCard = ({
             </div>
 
             <div className="min-w-0 space-y-3 pt-1 sm:pt-0">
-              <div className="space-y-1">
-                <h1 className="truncate text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+              <div className="space-y-2">
+                <h1 className="min-h-[40px] text-2xl font-semibold tracking-tight text-slate-900 sm:min-h-[48px] sm:text-3xl">
                   {information.fullName}
                 </h1>
 

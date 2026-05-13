@@ -31,6 +31,20 @@ type FileChipProps = {
   onRemove: () => void
 }
 
+const resolveAvatarSource = (src?: string) => {
+  const value = (src ?? "").trim()
+
+  if (!value) return "/avatar/user.png"
+  if (value === "user.png") return "/avatar/user.png"
+  if (value.endsWith("/user.png")) return "/avatar/user.png"
+  if (value.startsWith("http")) return value
+  if (value.startsWith("blob:")) return value
+  if (value.startsWith("data:")) return value
+  if (value.startsWith("/avatar/")) return value
+
+  return `/avatar/${value.replace(/^\/+/, "")}`
+}
+
 const FileChip = ({
   name,
   kind,
@@ -104,7 +118,6 @@ const CreatePost = ({
     file,
     fileName,
     fileKind,
-    canSubmit,
     selectFile,
     removeFile,
     reset,
@@ -135,7 +148,21 @@ const CreatePost = ({
   }
 
   const handleSubmit = async () => {
-    if (!canSubmit || !file || isSubmitting) return
+    if (isSubmitting) return
+
+    if (!title.trim()) {
+      toast.error("Vui lòng nhập nội dung bài viết", {
+        duration: 1000,
+      })
+      return
+    }
+
+    if (!file) {
+      toast.error("Vui lòng chọn file", {
+        duration: 1000,
+      })
+      return
+    }
 
     try {
       setIsSubmitting(true)
@@ -161,10 +188,7 @@ const CreatePost = ({
     navigate(`/information/${currentUser.id}`)
   }
 
-  const avatarSrc =
-    currentUser.avatar?.startsWith("http")
-      ? currentUser.avatar
-      : `/avatar/${currentUser.avatar || "user.png"}`
+  const avatarSrc = resolveAvatarSource(currentUser.avatar)
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -204,9 +228,9 @@ const CreatePost = ({
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!canSubmit || isSubmitting}
+          disabled={isSubmitting}
           className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition ${
-            canSubmit && !isSubmitting
+            !isSubmitting
               ? "bg-blue-600 text-white hover:bg-blue-700"
               : "bg-slate-200 text-slate-400"
           }`}

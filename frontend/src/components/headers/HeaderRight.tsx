@@ -7,12 +7,30 @@ type Props = {
   mobileSearchOpen: boolean
 }
 
+const resolveAvatarSource = (src?: string) => {
+  const value = (src ?? "").trim()
+
+  if (!value) return "/avatar/user.png"
+  if (value === "user.png") return "/avatar/user.png"
+  if (value.endsWith("/user.png")) return "/avatar/user.png"
+  if (value.startsWith("http")) return value
+  if (value.startsWith("blob:")) return value
+  if (value.startsWith("data:")) return value
+  if (value.startsWith("/avatar/")) return value
+
+  return `/avatar/${value.replace(/^\/+/, "")}`
+}
+
 const HeaderRight = ({ mobileSearchOpen }: Props) => {
   const { user } = useAuth()
-  const { unreadCount } = useNotifications(user?.id)
+  const { unreadCount } = useNotifications()
 
   return (
-    <div className={`flex items-center gap-4 ${mobileSearchOpen ? "max-sm:hidden" : ""} sm:flex`}>
+    <div
+      className={`flex items-center gap-4 ${
+        mobileSearchOpen ? "max-sm:hidden" : ""
+      } sm:flex`}
+    >
       {user ? (
         <>
           <NavLink
@@ -20,6 +38,7 @@ const HeaderRight = ({ mobileSearchOpen }: Props) => {
             className="relative rounded-full p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
           >
             <Bell className="h-5 w-5" />
+
             {unreadCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
                 {unreadCount > 10 ? "10+" : unreadCount}
@@ -32,11 +51,7 @@ const HeaderRight = ({ mobileSearchOpen }: Props) => {
             className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-200"
           >
             <img
-              src={
-                user.avatar?.startsWith("http")
-                  ? user.avatar
-                  : `/avatar/${user.avatar || "user.png"}`
-              }
+              src={resolveAvatarSource(user.avatar)}
               alt={user.fullName}
               className="h-full w-full object-cover"
             />

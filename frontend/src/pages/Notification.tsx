@@ -7,16 +7,17 @@ import { useNotifications } from "../hooks/notifications/useNotifications"
 
 const Notification = () => {
   const navigate = useNavigate()
-  const { currentUser, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, hydrated } = useAuth()
+
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/signin", { replace: true })
-    }
-  }, [isAuthenticated, navigate])
+    if (!hydrated) return
 
-  const { notifications, unreadCount, markAsRead, markAllAsRead } =
-    useNotifications(currentUser?.id)
+    if (!isAuthenticated) {
+      navigate("/sign-in", { replace: true })
+    }
+  }, [hydrated, isAuthenticated, navigate])
 
   const handleOpenPost = (
     notificationId: string,
@@ -25,10 +26,13 @@ const Notification = () => {
   ) => {
     markAsRead(notificationId)
 
-    const query = `postId=${postId}${commentId ? `&commentId=${commentId}` : ""}`
+    const query = `postId=${postId}${
+      commentId ? `&commentId=${commentId}` : ""
+    }`
     navigate(`/?${query}`)
   }
 
+  if (!hydrated) return null
   if (!isAuthenticated) return null
 
   return (
@@ -67,90 +71,92 @@ const Notification = () => {
             </h2>
 
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-              Khi có lượt thích hoặc bình luận mới vào bài viết của bạn, thông báo sẽ xuất hiện tại đây.
+              Khi có lượt thích hoặc bình luận mới vào bài viết của bạn, thông
+              báo sẽ xuất hiện tại đây.
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {notifications.map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                onClick={() =>
-                  handleOpenPost(n.id, n.postId, n.commentId)
-                }
-                className={`group relative block w-full rounded-[22px] border p-3.5 text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${
-                  n.isRead
-                    ? "border-slate-100 bg-white opacity-70"
-                    : "border-indigo-100 bg-gradient-to-r from-indigo-50 to-blue-50"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="relative shrink-0">
-                    <img
-                      src={n.actor.avatar}
-                      alt={n.actor.fullName}
-                      className="h-11 w-11 rounded-full object-cover ring-2 ring-white"
-                    />
+            {notifications.map((n) => {
+              const isLike =
+                n.type === "like_post" || n.type === "like_comment"
 
-                    <div
-                      className={`absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full text-white shadow-sm ${
-                        n.type === "like" ? "bg-red-500" : "bg-blue-500"
-                      }`}
-                    >
-                      {n.type === "like" ? (
-                        <Heart className="h-3 w-3 fill-white" />
-                      ) : (
-                        <MessageCircle className="h-3 w-3" />
-                      )}
-                    </div>
-                  </div>
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() =>
+                    handleOpenPost(n.id, n.postId, n.commentId)
+                  }
+                  className={`group relative block w-full rounded-[22px] border p-3.5 text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                    n.isRead
+                      ? "border-slate-100 bg-white opacity-70"
+                      : "border-indigo-100 bg-gradient-to-r from-indigo-50 to-blue-50"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="relative shrink-0">
+                      <img
+                        src={n.actor.avatar}
+                        alt={n.actor.fullName}
+                        className="h-11 w-11 rounded-full object-cover ring-2 ring-white"
+                      />
 
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className={`text-sm leading-6 ${
-                        n.isRead ? "text-slate-500" : "text-slate-700"
-                      }`}
-                    >
-                      <span
-                        className={`font-semibold ${
-                          n.isRead ? "text-slate-700" : "text-slate-900"
+                      <div
+                        className={`absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full text-white shadow-sm ${
+                          isLike ? "bg-red-500" : "bg-blue-500"
                         }`}
                       >
-                        {n.actor.fullName}
-                      </span>{" "}
-                      {n.actionText}
-                    </p>
-
-                    <div className="mt-1 text-sm font-medium text-slate-800">
-                      {n.postTitle}
+                        {isLike ? (
+                          <Heart className="h-3 w-3 fill-white" />
+                        ) : (
+                          <MessageCircle className="h-3 w-3" />
+                        )}
+                      </div>
                     </div>
 
-                    {n.commentPreview && (
-                      <div className="mt-2 rounded-2xl bg-white/80 px-3 py-2 text-sm italic text-slate-500 ring-1 ring-slate-100">
-                        {n.commentPreview}
-                      </div>
-                    )}
-
-                    <div className="mt-2 flex items-center gap-2">
-                      <p className="text-xs font-medium text-slate-400">
-                        {new Date(n.createdAt).toLocaleString("vi-VN")}
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={`text-sm leading-6 ${
+                          n.isRead ? "text-slate-500" : "text-slate-700"
+                        }`}
+                      >
+                        <span
+                          className={`font-semibold ${
+                            n.isRead ? "text-slate-700" : "text-slate-900"
+                          }`}
+                        >
+                          {n.actor.fullName}
+                        </span>{" "}
+                        {n.actionText}
                       </p>
 
-                      {!n.isRead && (
-                        <span className="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-medium text-white">
-                          Mới
-                        </span>
+                      {n.commentPreview && (
+                        <div className="mt-2 rounded-2xl bg-white/80 px-3 py-2 text-sm italic text-slate-500 ring-1 ring-slate-100">
+                          {n.commentPreview}
+                        </div>
                       )}
-                    </div>
-                  </div>
 
-                  {!n.isRead && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-blue-500 shadow-sm" />
-                  )}
-                </div>
-              </button>
-            ))}
+                      <div className="mt-2 flex items-center gap-2">
+                        <p className="text-xs font-medium text-slate-400">
+                          {new Date(n.createdAt).toLocaleString("vi-VN")}
+                        </p>
+
+                        {!n.isRead && (
+                          <span className="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-medium text-white">
+                            Mới
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {!n.isRead && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-blue-500 shadow-sm" />
+                    )}
+                  </div>
+                </button>
+              )
+            })}
           </div>
         )}
       </div>

@@ -66,12 +66,20 @@ export type ChangePasswordPayload = {
 
 export const authApi = {
   signIn: async (payload: SignInPayload) => {
-    const response = await api.post<ApiResponse<AuthUserResponse>>("/auth/sign-in", payload, jsonConfig)
+    const response = await api.post<ApiResponse<AuthUserResponse>>(
+      "/auth/sign-in",
+      payload,
+      jsonConfig
+    )
     return response.data
   },
 
   signUp: async (payload: SignUpPayload) => {
-    const response = await api.post<ApiResponse<AuthUserResponse>>("/auth/sign-up", payload, jsonConfig)
+    const response = await api.post<ApiResponse<AuthUserResponse>>(
+      "/auth/sign-up",
+      payload,
+      jsonConfig
+    )
     return response.data
   },
 
@@ -120,14 +128,19 @@ export const authApi = {
 
 export const informationApi = {
   searchUsers: async (fullname: string) => {
-    const response = await api.get<ApiResponse<InformationSearchItem[]>>("/information/search", {
-      params: { fullname },
-    })
+    const response = await api.get<ApiResponse<InformationSearchItem[]>>(
+      "/information/search",
+      {
+        params: { fullname },
+      }
+    )
     return response.data
   },
 
   getInformationById: async (id: string) => {
-    const response = await api.get<ApiResponse<InformationProfile>>(`/information/${id}`)
+    const response = await api.get<ApiResponse<InformationProfile>>(
+      `/information/${id}`
+    )
     return response.data
   },
 
@@ -163,11 +176,15 @@ export const postApi = {
   },
 
   createPost: async (payload: FormData) => {
-    const response = await api.post<ApiResponse<PostItem>>("/post/create", payload, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
+    const response = await api.post<ApiResponse<PostItem>>(
+      "/post/create",
+      payload,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    )
     return response.data
   },
 
@@ -182,6 +199,72 @@ export const postApi = {
 
   deletePost: async (postId: string) => {
     const response = await api.delete<ApiResponse<null>>(`/post/delete/${postId}`)
+    return response.data
+  },
+
+  likePost: async (postId: string) => {
+    const response = await api.patch<{
+      message: string
+      liked: boolean
+      likesCount: number
+    }>(`/post/like/${postId}`)
+    return response.data
+  },
+}
+
+export const commentApi = {
+  getByPost: async (postId: string) => {
+    const response = await api.get<ApiResponse<{ comments: any[] }>>(
+      `/comment/post/${postId}`
+    )
+    return response.data
+  },
+
+  create: async (postId: string, payload: FormData) => {
+    const response = await api.post<ApiResponse<any>>(
+      `/comment/post/${postId}`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    )
+    return response.data
+  },
+
+  update: async (commentId: string, content: string) => {
+    const response = await api.patch<ApiResponse<any>>(
+      `/comment/update/${commentId}`,
+      { content },
+      jsonConfig
+    )
+    return response.data
+  },
+
+  delete: async (commentId: string) => {
+    const response = await api.delete<ApiResponse<null>>(
+      `/comment/delete/${commentId}`
+    )
+    return response.data
+  },
+}
+
+export const notificationApi = {
+  getAll: async (page = 1, limit = 10, type?: string) => {
+    const response = await api.get("/notification", {
+      params: { page, limit, ...(type ? { type } : {}) },
+    })
+    return response.data
+  },
+
+  markAsRead: async (id: string) => {
+    const response = await api.patch(`/notification/read/${id}`)
+    return response.data
+  },
+
+  markAllAsRead: async () => {
+    const response = await api.patch("/notification/read-all")
     return response.data
   },
 }

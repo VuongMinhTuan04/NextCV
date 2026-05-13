@@ -1,6 +1,6 @@
 import { toast } from "sonner"
 
-import type { User, CommentItem as CommentType } from "../../services/mockPosts"
+import type { User, CommentItem as CommentType } from "../../types/post"
 import { useComment } from "../../hooks/comments/useComment"
 import CommentInput from "./CommentInput"
 import CommentItem from "./CommentItem"
