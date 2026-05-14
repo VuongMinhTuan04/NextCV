@@ -14,7 +14,7 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/
 
   const handlePhoneChange = (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 11)
