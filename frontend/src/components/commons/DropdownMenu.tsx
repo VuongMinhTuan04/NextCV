@@ -34,7 +34,8 @@ const DropdownMenu = ({
       </div>
 
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-2 w-44 rounded-2xl border border-slate-200 bg-white p-1 shadow-xl animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute right-0 top-full z-20 mt-2 w-44 rounded-2xl border border-slate-200 bg-white p-1
+          shadow-xl animate-in fade-in zoom-in-95 duration-100">
           {items.map((item) => {
             const Icon = item.icon
 
@@ -43,14 +44,13 @@ const DropdownMenu = ({
               : "text-amber-500 hover:bg-amber-50 hover:text-amber-600"
 
             return (
-              <button
-                key={item.label}
-                type="button"
+              <button key={item.label} type="button"
                 onClick={() => {
                   item.onClick()
                   close()
                 }}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${baseClass} ${item.className || ""}`}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition
+                  ${baseClass} ${item.className || ""}`}
               >
                 <Icon className="h-4 w-4" />
                 <span>{item.label}</span>

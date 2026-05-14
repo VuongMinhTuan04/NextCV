@@ -82,52 +82,26 @@ const Information = () => {
       <Toaster position="top-right" richColors />
 
       <div className="mx-auto max-w-5xl space-y-5 p-6">
-        <InformationCard
-          information={information}
-          canEditInformation={canEditInformation}
-          onEditInformation={openEditModal}
-          onPreviewImage={openPreview}
-          onLogout={logout}
+        <InformationCard information={information} canEditInformation={canEditInformation} onEditInformation={openEditModal}
+          onPreviewImage={openPreview} onLogout={logout}
         />
 
-        <InformationPosts
-          posts={informationPosts}
-          currentUser={viewerUser}
-          ownerId={information.postOwnerId}
-          ownerEmail={information.email}
-          onToggleLike={handleToggleLike}
-          onDeletePost={handleDeletePost}
-          onUpdatePost={handleUpdatePost}
-          onAddComment={handleAddComment}
-          onUpdateComment={handleUpdateComment}
-          onDeleteComment={handleDeleteComment}
-          onPreviewImage={openPreview}
-          highlightPostId={highlightPostId}
-          highlightCommentId={highlightCommentId}
-          isAuthenticated={isAuthenticated}
+        <InformationPosts posts={informationPosts} currentUser={viewerUser} ownerId={information.postOwnerId}
+          ownerEmail={information.email} onToggleLike={handleToggleLike} onDeletePost={handleDeletePost}
+          onUpdatePost={handleUpdatePost} onAddComment={handleAddComment} onUpdateComment={handleUpdateComment}
+          onDeleteComment={handleDeleteComment} onPreviewImage={openPreview} highlightPostId={highlightPostId}
+          highlightCommentId={highlightCommentId} isAuthenticated={isAuthenticated}
         />
 
         {canEditInformation && (
           <>
-            <EditInformation
-              open={editOpen}
-              form={editForm}
-              errors={editErrors}
-              onFieldChange={setField}
-              onAvatarChange={setAvatar}
-              onUpdate={handleUpdateInformation}
-              onOpenPassword={openPasswordModal}
-              onClose={closeEditModal}
-              isDirty={isEditDirty}
+            <EditInformation open={editOpen} form={editForm} errors={editErrors}
+              onFieldChange={setField} onAvatarChange={setAvatar} onUpdate={handleUpdateInformation}
+              onOpenPassword={openPasswordModal} onClose={closeEditModal} isDirty={isEditDirty}
             />
 
-            <ChangePasswordModal
-              open={passwordOpen}
-              form={passwordForm}
-              errors={passwordErrors}
-              onFieldChange={setPasswordField}
-              onChangePassword={handleChangePassword}
-              onBack={backToEditModal}
+            <ChangePasswordModal open={passwordOpen} form={passwordForm} errors={passwordErrors}
+              onFieldChange={setPasswordField} onChangePassword={handleChangePassword} onBack={backToEditModal}
             />
           </>
         )}

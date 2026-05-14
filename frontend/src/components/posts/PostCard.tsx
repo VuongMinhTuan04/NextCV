@@ -34,7 +34,6 @@ const PostCard = ({
   onDeleteComment,
   onPreviewImage,
   initialCommentOpen = false,
-  highlightCommentId,
   isHighlighted = false,
   isAuthenticated = false,
 }: Props) => {
@@ -50,7 +49,6 @@ const PostCard = ({
     isEditing,
     draftTitle,
     setDraftTitle,
-    hasChanges,
     startEdit,
     cancelEdit,
     setIsEditing,
@@ -106,40 +104,22 @@ const PostCard = ({
         isHighlighted ? "ring-2 ring-blue-300 scale-[1.01]" : ""
       }`}
     >
-      <PostHeader
-        post={normalizedPost}
-        canManage={canManage}
-        isEditing={isEditing}
-        draftTitle={draftTitle}
-        onDraftTitleChange={setDraftTitle}
-        onStartEdit={startEdit}
-        onSaveEdit={handleSaveEdit}
-        onCancelEdit={cancelEdit}
-        onDeletePost={handleDeletePost}
-        isAuthenticated={isAuthenticated}
+      <PostHeader post={normalizedPost} canManage={canManage} isEditing={isEditing} draftTitle={draftTitle}
+        onDraftTitleChange={setDraftTitle} onStartEdit={startEdit} onSaveEdit={handleSaveEdit} onCancelEdit={cancelEdit}
+        onDeletePost={handleDeletePost} isAuthenticated={isAuthenticated}
       />
 
       <PostMedia attachment={post.attachment} onPreviewImage={onPreviewImage} />
 
-      <PostActions
-        liked={post.liked}
-        likes={post.likes}
-        commentsCount={post.comments.length}
-        isCommentOpen={isCommentOpen}
-        onToggleLike={() => onToggleLike(post.id)}
-        onToggleComment={() => setIsCommentOpen((prev) => !prev)}
-        isAuthenticated={isAuthenticated}
+      <PostActions liked={post.liked} likes={post.likes} commentsCount={post.comments.length}
+        isCommentOpen={isCommentOpen} onToggleLike={() => onToggleLike(post.id)}
+        onToggleComment={() => setIsCommentOpen((prev) => !prev)} isAuthenticated={isAuthenticated}
       />
 
       {isCommentOpen && (
-        <CommentBox
-          currentUser={currentUser}
-          comments={post.comments}
-          onAddComment={handleAddComment}
-          onUpdateComment={handleUpdateComment}
-          onDeleteComment={handleDeleteComment}
-          onPreviewImage={onPreviewImage}
-          isAuthenticated={isAuthenticated}
+        <CommentBox currentUser={currentUser} comments={post.comments} onAddComment={handleAddComment}
+          onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment}
+          onPreviewImage={onPreviewImage} isAuthenticated={isAuthenticated}
         />
       )}
     </article>

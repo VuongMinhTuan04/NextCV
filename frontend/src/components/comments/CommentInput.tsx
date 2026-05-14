@@ -95,27 +95,20 @@ const CommentInput = ({
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
           <div className="flex items-center gap-2">
-            <AutoResizeTextarea
-              value={value}
-              onChange={(event) => onChange(event.target.value)}
-              placeholder="Viết bình luận..."
-              className="max-h-44 min-h-[40px] w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+            <AutoResizeTextarea value={value} onChange={(event) => onChange(event.target.value)}
+              placeholder="Viết bình luận..." className="max-h-44 min-h-[40px] w-full bg-transparent text-sm
+            text-slate-700 outline-none placeholder:text-slate-400"
             />
 
-            <button
-              type="button"
-              onClick={openFilePicker}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
+            <button type="button" onClick={openFilePicker} className="grid h-8 w-8 shrink-0 place-items-center
+              rounded-full text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
             >
               <Paperclip className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onSend}
-          disabled={!canSend}
+        <button type="button" onClick={onSend} disabled={!canSend}
           className={`grid h-10 w-10 shrink-0 place-items-center rounded-full transition ${
             canSend
               ? "bg-blue-600 text-white hover:bg-blue-700"
@@ -130,13 +123,9 @@ const CommentInput = ({
         <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-3">
           <div />
 
-          <div
-            className={`flex items-center justify-between gap-3 rounded-2xl border px-3 py-2 ${wrapperClass}`}
-          >
+          <div className={`flex items-center justify-between gap-3 rounded-2xl border px-3 py-2 ${wrapperClass}`}>
             <div className="flex min-w-0 items-center gap-2">
-              <div
-                className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${iconClass}`}
-              >
+              <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${iconClass}`}>
                 <Icon className="h-4 w-4" />
               </div>
 
@@ -145,10 +134,8 @@ const CommentInput = ({
               </span>
             </div>
 
-            <button
-              type="button"
-              onClick={onRemoveFile}
-              className="grid h-8 w-8 place-items-center rounded-full text-red-500 transition hover:bg-red-100 hover:text-red-700"
+            <button type="button" onClick={onRemoveFile} className="grid h-8 w-8 place-items-center rounded-full
+            text-red-500 transition hover:bg-red-100 hover:text-red-700"
             >
               <X className="h-4 w-4" />
             </button>
@@ -158,12 +145,9 @@ const CommentInput = ({
         </div>
       )}
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.doc,.docx"
-        className="hidden"
-        onChange={handleFileChange}
+      <input ref={fileInputRef} type="file" accept="image/*,application/pdf,application/msword,
+        application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.doc,.docx"
+        className="hidden" onChange={handleFileChange}
       />
     </div>
   )

@@ -89,10 +89,8 @@ const EditInformation = ({
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Email
                 </label>
-                <input
-                  disabled
-                  value={form.email}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-500 outline-none"
+                <input disabled value={form.email} className="w-full rounded-2xl border border-slate-200 bg-slate-100
+                  px-4 py-3 text-sm text-slate-500 outline-none"
                 />
               </div>
 
@@ -100,9 +98,7 @@ const EditInformation = ({
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Họ và tên <span className="text-rose-500">*</span>
                 </label>
-                <input
-                  value={form.fullName}
-                  onChange={(e) => handleFullNameChange(e.target.value)}
+                <input value={form.fullName} onChange={(e) => handleFullNameChange(e.target.value)}
                   placeholder="Nhập họ và tên"
                   className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${
                     errors.fullName
@@ -123,9 +119,7 @@ const EditInformation = ({
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Số điện thoại <span className="text-rose-500">*</span>
                 </label>
-                <input
-                  value={form.phone}
-                  onChange={(e) => handlePhoneChange(e.target.value)}
+                <input value={form.phone} onChange={(e) => handlePhoneChange(e.target.value)}
                   onCompositionStart={() => {
                     isComposing.current = true
                     if (phoneTimerRef.current) clearTimeout(phoneTimerRef.current)
@@ -156,11 +150,9 @@ const EditInformation = ({
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Mô tả bản thân
                 </label>
-                <textarea
-                  value={form.about}
-                  placeholder="Viết vài dòng giới thiệu về bạn"
-                  rows={4}
-                  className={`w-full resize-none rounded-2xl border px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 ${
+                <textarea value={form.about} placeholder="Viết vài dòng giới thiệu về bạn" rows={4}
+                  className={`w-full resize-none rounded-2xl border px-4 py-3 text-sm text-slate-700 outline-none
+                    transition placeholder:text-slate-400 ${
                     errors.about
                       ? "border-rose-300 bg-rose-50/60 focus:border-rose-400"
                       : "border-slate-200 bg-white focus:border-blue-300"
@@ -192,50 +184,47 @@ const EditInformation = ({
               </div>
 
               <div className="flex flex-col gap-3 pt-1 lg:flex-row">
-                <button
-                  type="button"
-                  onClick={onUpdate}
-                  disabled={!isDirty || isUpdating}
-                  className="inline-flex min-w-[160px] flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+                <button type="button" onClick={onUpdate} disabled={!isDirty || isUpdating} className="inline-flex min-w-[160px]
+                  flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-sm
+                  font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300
+                  disabled:text-slate-500"
                 >
                   <Save className="h-4 w-4" />
                   <span>Cập nhật thông tin</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={onOpenPassword}
-                  className="inline-flex min-w-[160px] flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
+                <button type="button" onClick={onOpenPassword} className="inline-flex min-w-[160px] flex-1 cursor-pointer
+                  items-center justify-center gap-2 rounded-full bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-700
+                  transition hover:bg-indigo-100"
                 >
                   <KeyRound className="h-4 w-4" />
                   <span>Đổi mật khẩu</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="inline-flex min-w-[160px] flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-200 hover:text-slate-900"
+                <button type="button" onClick={onClose} className="inline-flex min-w-[160px] flex-1 cursor-pointer items-center
+                  justify-center gap-2 rounded-full bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700 transition
+                  hover:bg-slate-200 hover:text-slate-900"
                 >
                   <span>Đóng</span>
                 </button>
               </div>
             </div>
 
-            <div className="order-1 border-b border-slate-100 bg-slate-50 px-4 py-5 sm:px-6 lg:order-2 lg:border-b-0 lg:border-l lg:px-6 lg:py-6">
-              <div className="flex h-full flex-col items-center justify-center rounded-[24px] border border-slate-100 bg-white px-4 py-5 shadow-sm sm:px-6 sm:py-6">
+            <div className="order-1 border-b border-slate-100 bg-slate-50 px-4 py-5 sm:px-6 lg:order-2 lg:border-b-0
+              lg:border-l lg:px-6 lg:py-6"
+            >
+              <div className="flex h-full flex-col items-center justify-center rounded-[24px] border border-slate-100
+              bg-white px-4 py-5 shadow-sm sm:px-6 sm:py-6"
+              >
                 <div className="relative">
-                  <div className="h-28 w-28 overflow-hidden rounded-full border-4 border-white bg-slate-200 shadow-xl sm:h-32 sm:w-32 lg:h-40 lg:w-40">
-                    <img
-                      src={form.avatar}
-                      alt={form.fullName || "Avatar"}
-                      className="h-full w-full object-cover"
-                    />
+                  <div className="h-28 w-28 overflow-hidden rounded-full border-4 border-white bg-slate-200 shadow-xl
+                    sm:h-32 sm:w-32 lg:h-40 lg:w-40"
+                  >
+                    <img src={form.avatar} alt={form.fullName || "Avatar"} className="h-full w-full object-cover" />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => fileRef.current?.click()}
-                    className="absolute bottom-1 right-1 grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-white text-slate-600 shadow-lg transition hover:bg-blue-50 hover:text-blue-700"
-                    aria-label="Đổi ảnh đại diện"
+                  <button type="button" onClick={() => fileRef.current?.click()} className="absolute bottom-1 right-1 grid
+                    h-10 w-10 cursor-pointer place-items-center rounded-full bg-white text-slate-600 shadow-lg transition
+                    hover:bg-blue-50 hover:text-blue-700" aria-label="Đổi ảnh đại diện"
                   >
                     <Camera className="h-4 w-4" />
                   </button>
@@ -248,13 +237,7 @@ const EditInformation = ({
                     Chọn ảnh JPG, PNG hoặc WebP để cập nhật hình đại diện.
                   </p>
                 </div>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                />
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
               </div>
             </div>
           </div>

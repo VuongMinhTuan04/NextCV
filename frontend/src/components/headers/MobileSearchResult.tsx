@@ -32,15 +32,10 @@ const MobileSearchResult = ({
     <div className="absolute left-0 top-16 z-50 w-full border-b border-slate-200 bg-white sm:hidden">
       <ul className="max-h-72 overflow-y-auto py-2">
         {results.map((user) => (
-          <li
-            key={user.id}
-            onClick={() => handleClick(user.id)}
+          <li key={user.id} onClick={() => handleClick(user.id)}
             className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-slate-100"
           >
-            <img
-              src={user.avatar}
-              alt={user.fullName}
-              className="h-8 w-8 rounded-full object-cover"
+            <img src={user.avatar} alt={user.fullName} className="h-8 w-8 rounded-full object-cover"
               onError={(e) => {
                 ;(e.currentTarget as HTMLImageElement).src = "/avatar/user.png"
               }}

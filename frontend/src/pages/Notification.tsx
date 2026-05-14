@@ -7,7 +7,7 @@ import { useNotifications } from "../hooks/notifications/useNotifications"
 
 const Notification = () => {
   const navigate = useNavigate()
-  const { user, isAuthenticated, hydrated } = useAuth()
+  const { isAuthenticated, hydrated } = useAuth()
 
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
 
@@ -37,10 +37,14 @@ const Notification = () => {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-      <section className="rounded-[24px] bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-800 px-5 py-4 text-white shadow-[0_18px_40px_rgba(15,23,42,0.22)]">
+      <section className="rounded-[24px] bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-800 px-5 py-4
+      text-white shadow-[0_18px_40px_rgba(15,23,42,0.22)]"
+      >
         <div className="flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15 backdrop-blur-sm">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15
+              backdrop-blur-sm"
+            >
               <Bell className="h-5 w-5" />
             </div>
 
@@ -49,10 +53,8 @@ const Notification = () => {
             </h1>
           </div>
 
-          <button
-            type="button"
-            onClick={markAllAsRead}
-            className="inline-flex shrink-0 items-center rounded-full bg-white/10 px-3 py-1 text-sm font-medium ring-1 ring-white/15"
+          <button type="button" onClick={markAllAsRead} className="inline-flex shrink-0 items-center rounded-full
+          bg-white/10 px-3 py-1 text-sm font-medium ring-1 ring-white/15"
           >
             {unreadCount} chưa đọc
           </button>
@@ -82,29 +84,27 @@ const Notification = () => {
                 n.type === "like_post" || n.type === "like_comment"
 
               return (
-                <button
-                  key={n.id}
-                  type="button"
+                <button key={n.id} type="button"
                   onClick={() =>
                     handleOpenPost(n.id, n.postId, n.commentId)
                   }
-                  className={`group relative block w-full rounded-[22px] border p-3.5 text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${
-                    n.isRead
-                      ? "border-slate-100 bg-white opacity-70"
-                      : "border-indigo-100 bg-gradient-to-r from-indigo-50 to-blue-50"
+                  className={`group relative block w-full rounded-[22px] border p-3.5 text-left shadow-sm
+                    transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                      n.isRead
+                        ? "border-slate-100 bg-white opacity-70"
+                        : "border-indigo-100 bg-gradient-to-r from-indigo-50 to-blue-50"
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="relative shrink-0">
-                      <img
-                        src={n.actor.avatar}
-                        alt={n.actor.fullName}
+                      <img src={n.actor.avatar} alt={n.actor.fullName}
                         className="h-11 w-11 rounded-full object-cover ring-2 ring-white"
                       />
 
                       <div
-                        className={`absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full text-white shadow-sm ${
-                          isLike ? "bg-red-500" : "bg-blue-500"
+                        className={`absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center
+                          rounded-full text-white shadow-sm ${
+                            isLike ? "bg-red-500" : "bg-blue-500"
                         }`}
                       >
                         {isLike ? (
@@ -132,7 +132,9 @@ const Notification = () => {
                       </p>
 
                       {n.commentPreview && (
-                        <div className="mt-2 rounded-2xl bg-white/80 px-3 py-2 text-sm italic text-slate-500 ring-1 ring-slate-100">
+                        <div className="mt-2 rounded-2xl bg-white/80 px-3 py-2 text-sm italic text-slate-500 ring-1
+                          ring-slate-100"
+                        >
                           {n.commentPreview}
                         </div>
                       )}
@@ -143,7 +145,9 @@ const Notification = () => {
                         </p>
 
                         {!n.isRead && (
-                          <span className="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-medium text-white">
+                          <span className="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[11px]
+                            font-medium text-white"
+                          >
                             Mới
                           </span>
                         )}

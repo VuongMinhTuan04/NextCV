@@ -2,7 +2,10 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es6",
-    "types": [],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
 
     "sourceMap": true,
     "declaration": true,
@@ -12,10 +15,9 @@
     "exactOptionalPropertyTypes": true,
 
     "strict": true,
-    "jsx": "react-jsx",
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true,
-  }
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

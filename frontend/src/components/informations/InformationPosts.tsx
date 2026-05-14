@@ -79,25 +79,19 @@ const InformationPosts = ({
                 else postRefs.current.delete(post.id)
               }}
             >
-              <PostCard
-                post={post}
-                currentUser={currentUser}
-                onToggleLike={onToggleLike}
-                onDeletePost={onDeletePost}
-                onUpdatePost={onUpdatePost}
-                onAddComment={onAddComment}
-                onUpdateComment={onUpdateComment}
-                onDeleteComment={onDeleteComment}
-                onPreviewImage={onPreviewImage}
-                initialCommentOpen={post.id === highlightPostId && !!highlightCommentId}
-                highlightCommentId={highlightCommentId}
+              <PostCard post={post} currentUser={currentUser} onToggleLike={onToggleLike}
+                onDeletePost={onDeletePost} onUpdatePost={onUpdatePost} onAddComment={onAddComment}
+                onUpdateComment={onUpdateComment} onDeleteComment={onDeleteComment} onPreviewImage={onPreviewImage}
+                initialCommentOpen={post.id === highlightPostId && !!highlightCommentId} highlightCommentId={highlightCommentId}
                 isAuthenticated={isAuthenticated}
               />
             </div>
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center shadow-sm sm:px-6 sm:py-12">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center shadow-sm
+          sm:px-6 sm:py-12"
+        >
           <p className="text-sm font-medium text-slate-700">
             Chưa có bài viết nào.
           </p>

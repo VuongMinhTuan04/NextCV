@@ -53,30 +53,16 @@ const CommentBox = ({
       {comments.length > 0 && (
         <div className="space-y-3">
           {comments.map((comment) => (
-            <CommentItem
-              key={comment.id}
-              comment={comment}
-              currentUser={currentUser}
-              onUpdate={onUpdateComment}
-              onDelete={onDeleteComment}
-              onPreviewImage={onPreviewImage}
+            <CommentItem key={comment.id} comment={comment} currentUser={currentUser}
+              onUpdate={onUpdateComment} onDelete={onDeleteComment} onPreviewImage={onPreviewImage}
             />
           ))}
         </div>
       )}
 
       {isAuthenticated && (
-        <CommentInput
-          currentUser={currentUser}
-          value={content}
-          file={file}
-          fileName={fileName}
-          fileKind={fileKind}
-          canSend={canSend}
-          onChange={setContent}
-          onSelectFile={selectFile}
-          onRemoveFile={removeFile}
-          onSend={handleSend}
+        <CommentInput currentUser={currentUser} value={content} file={file} fileName={fileName} fileKind={fileKind}
+          canSend={canSend} onChange={setContent} onSelectFile={selectFile} onRemoveFile={removeFile} onSend={handleSend}
         />
       )}
     </div>

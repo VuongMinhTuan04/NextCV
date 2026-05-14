@@ -10,8 +10,7 @@ const IconButton = ({
   ...props
 }: IconButtonProps) => {
   return (
-    <button
-      className={`inline-flex items-center justify-center transition disabled:cursor-not-allowed disabled:opacity-50 ${
+    <button className={`inline-flex items-center justify-center transition disabled:cursor-not-allowed disabled:opacity-50 ${
         active ? "" : ""
       } ${className}`}
       {...props}

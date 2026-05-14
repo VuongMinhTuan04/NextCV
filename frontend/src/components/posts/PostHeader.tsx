@@ -71,9 +71,7 @@ const PostHeader = ({
 
   return (
     <div className="grid grid-cols-[auto_1fr_auto] gap-3 items-start">
-      <button
-        type="button"
-        onClick={handleAvatarClick}
+      <button type="button" onClick={handleAvatarClick}
         className="shrink-0 cursor-pointer rounded-full transition hover:opacity-80"
       >
         <Avatar src={fixedPost.user.avatar} alt={fixedPost.user.fullName} />
@@ -91,25 +89,20 @@ const PostHeader = ({
 
         {isEditing ? (
           <div className="mt-3 space-y-3">
-            <AutoResizeTextarea
-              value={draftTitle}
-              onChange={(event) => onDraftTitleChange(event.target.value)}
-              className="min-h-[44px] w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:bg-white"
+            <AutoResizeTextarea value={draftTitle} onChange={(event) => onDraftTitleChange(event.target.value)}
+              className="min-h-[44px] w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm
+            text-slate-700 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:bg-white"
             />
 
             <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={onCancelEdit}
-                className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+              <button type="button" onClick={onCancelEdit} className="flex items-center gap-1 rounded-full px-4 py-2
+                text-sm font-medium text-slate-600 transition hover:bg-slate-100"
               >
                 <X className="h-4 w-4" />
                 Hủy
               </button>
 
-              <button
-                type="button"
-                onClick={handleSave}
+              <button type="button" onClick={handleSave}
                 disabled={
                   draftTitle.trim().length === 0 ||
                   isUnchanged
@@ -134,8 +127,7 @@ const PostHeader = ({
       </div>
 
       {canManage && !isEditing && (
-        <DropdownMenu
-          trigger={<MoreHorizontal className="h-4 w-4" />}
+        <DropdownMenu trigger={<MoreHorizontal className="h-4 w-4" />}
           items={[
             { label: "Sửa bài viết", icon: Edit3, onClick: onStartEdit },
             { label: "Xóa bài viết", icon: Trash2, onClick: handleDelete, destructive: true },

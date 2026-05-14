@@ -21,9 +21,7 @@ const PostActions = ({
 }: Props) => {
   return (
     <div className="mt-4 flex items-center gap-3 border-t border-slate-100 pt-4">
-      <button
-        type="button"
-        onClick={isAuthenticated ? onToggleLike : undefined}
+      <button type="button" onClick={isAuthenticated ? onToggleLike : undefined}
         className={`flex min-w-[110px] items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
           liked
             ? "bg-red-100 text-red-600"
@@ -33,17 +31,12 @@ const PostActions = ({
         }`}
         disabled={!isAuthenticated}
       >
-        <Heart
-          className="h-4 w-4"
-          fill={liked ? "currentColor" : "none"}
-        />
+        <Heart className="h-4 w-4" fill={liked ? "currentColor" : "none"} />
         <span>{likes}</span>
       </button>
 
-      <button
-        type="button"
-        onClick={onToggleComment}
-        className={`flex min-w-[110px] items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition cursor-pointer ${
+      <button type="button" onClick={onToggleComment} className={`flex min-w-[110px] items-center justify-center gap-2
+        rounded-full px-4 py-2 text-sm font-medium transition cursor-pointer ${
           isCommentOpen
             ? "bg-blue-50 text-blue-600"
             : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"

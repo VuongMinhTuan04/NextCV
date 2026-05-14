@@ -452,19 +452,11 @@ const HomePage = () => {
         <div className="space-y-4">
           {posts.map((post) => (
             <div key={post.id} id={`post-${post.id}`}>
-              <PostCard
-                post={post}
-                currentUser={fallbackUser}
-                onToggleLike={handleToggleLike}
-                onDeletePost={handleDeletePost}
-                onUpdatePost={handleUpdatePost}
-                onAddComment={handleAddComment}
-                onUpdateComment={handleUpdateComment}
-                onDeleteComment={handleDeleteComment}
-                onPreviewImage={openPreview}
-                initialCommentOpen={post.id === highlightPostId && !!highlightCommentId}
-                highlightCommentId={highlightCommentId || undefined}
-                isHighlighted={highlightedPostId === post.id}
+              <PostCard post={post} currentUser={fallbackUser} onToggleLike={handleToggleLike}
+                onDeletePost={handleDeletePost} onUpdatePost={handleUpdatePost} onAddComment={handleAddComment}
+                onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment}
+                onPreviewImage={openPreview} initialCommentOpen={post.id === highlightPostId && !!highlightCommentId}
+                highlightCommentId={highlightCommentId || undefined} isHighlighted={highlightedPostId === post.id}
                 isAuthenticated={isAuthenticated}
               />
             </div>

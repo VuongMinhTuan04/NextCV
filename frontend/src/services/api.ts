@@ -2,8 +2,10 @@ import axios from "axios"
 
 import type { PostItem } from "../types/post"
 
+const BASE_URL = import.meta.env.NODE === "development" ? "http://localhost:5000/api" : "/api"
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:5000/api",
+  baseURL: BASE_URL,
   withCredentials: true,
 })
 

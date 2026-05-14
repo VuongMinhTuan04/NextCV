@@ -179,11 +179,10 @@ const ForgotPassword = () => {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleSendCode}
-              disabled={isSendingCode}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+            <button type="button" onClick={handleSendCode} disabled={isSendingCode}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-3 text-sm
+                font-semibold text-white transition hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed
+              disabled:bg-slate-300 disabled:text-slate-500"
             >
               <Send className="h-5 w-5" />
               {isSendingCode ? "Đang gửi..." : "Gửi mã"}
@@ -223,23 +222,21 @@ const ForgotPassword = () => {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleVerifyCode}
-              disabled={isVerifyingCode}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+            <button type="button" onClick={handleVerifyCode} disabled={isVerifyingCode} className="flex w-full items-center
+              justify-center gap-2 rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white transition
+              hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
             >
               {isVerifyingCode ? "Đang xác nhận..." : "Xác nhận"}
             </button>
 
-            <button
-              type="button"
+            <button type="button"
               onClick={() => {
                 setStep(1)
                 setCode("")
                 setErrors({})
               }}
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 cursor-pointer"
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white
+                py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 cursor-pointer"
             >
               <ArrowLeft className="h-4 w-4" />
               Quay lại
@@ -269,9 +266,7 @@ const ForgotPassword = () => {
                       : "border-slate-200 bg-slate-50 focus:border-blue-300"
                   }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
+                <button type="button" onClick={() => setShowNewPassword(!showNewPassword)}
                   className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
                 >
                   {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -288,9 +283,7 @@ const ForgotPassword = () => {
                 Xác nhận mật khẩu <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
+                <input type={showConfirmPassword ? "text" : "password"} value={confirmPassword}
                   onChange={(e) => {
                     setConfirmPassword(e.target.value.replace(/\s/g, ""))
                     setErrors((prev) => ({ ...prev, confirmPassword: "" }))
@@ -302,9 +295,7 @@ const ForgotPassword = () => {
                       : "border-slate-200 bg-slate-50 focus:border-blue-300"
                   }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
                 >
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -315,11 +306,10 @@ const ForgotPassword = () => {
               )}
             </div>
 
-            <button
-              type="button"
-              onClick={handleChangePassword}
-              disabled={isResettingPassword}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+            <button type="button" onClick={handleChangePassword} disabled={isResettingPassword}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-2.5 text-sm font-semibold
+              text-white transition hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-300
+              disabled:text-slate-500"
             >
               {isResettingPassword ? "Đang đổi..." : "Đổi mật khẩu"}
             </button>

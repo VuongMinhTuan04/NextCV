@@ -112,9 +112,7 @@ const SignUp = () => {
               <Mail className="h-4 w-4 text-slate-400" />
               Email <span className="text-rose-500">*</span>
             </label>
-            <input
-              type="text"
-              value={email}
+            <input type="text" value={email}
               onChange={(e) => {
                 setEmail(e.target.value.replace(/\s/g, ""))
                 setErrors((prev) => ({ ...prev, email: "" }))
@@ -142,9 +140,7 @@ const SignUp = () => {
               Mật khẩu <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
+              <input type={showPassword ? "text" : "password"} value={password}
                 onChange={(e) => {
                   setPassword(e.target.value.replace(/\s/g, ""))
                   setErrors((prev) => ({ ...prev, password: "" }))
@@ -156,9 +152,7 @@ const SignUp = () => {
                     : "border-slate-200 bg-slate-50 focus:border-blue-300"
                 }`}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
+              <button type="button" onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -208,12 +202,8 @@ const SignUp = () => {
               <Phone className="h-4 w-4 text-slate-400" />
               Số điện thoại <span className="text-rose-500">*</span>
             </label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => handlePhoneChange(e.target.value)}
-              placeholder="Nhập số điện thoại"
-              inputMode="numeric"
+            <input type="tel" value={phone} onChange={(e) => handlePhoneChange(e.target.value)}
+              placeholder="Nhập số điện thoại" inputMode="numeric"
               className={`w-full rounded-xl border py-2.5 px-4 text-sm outline-none transition ${
                 errors.phone
                   ? "border-rose-300 bg-rose-50/60 focus:border-rose-400"
@@ -230,10 +220,9 @@ const SignUp = () => {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
+          <button type="submit" disabled={isSubmitting} className="flex w-full items-center justify-center gap-2
+            rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700
+            cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
           >
             <UserPlus className="h-5 w-5" />
             Đăng ký

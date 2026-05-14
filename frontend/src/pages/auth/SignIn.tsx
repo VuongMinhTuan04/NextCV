@@ -86,10 +86,7 @@ const SignIn = () => {
               <Mail className="h-4 w-4 text-slate-400" />
               Email
             </label>
-            <input
-              type="text"
-              autoComplete="email"
-              value={email}
+            <input type="text" autoComplete="email" value={email}
               onChange={(e) => {
                 setEmail(e.target.value.replace(/\s/g, ""))
                 setErrors((prev) => ({ ...prev, email: undefined }))
@@ -117,10 +114,7 @@ const SignIn = () => {
               Mật khẩu
             </label>
             <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                value={password}
+              <input type={showPassword ? "text" : "password"} autoComplete="current-password" value={password}
                 onChange={(e) => {
                   setPassword(e.target.value.replace(/\s/g, ""))
                   setErrors((prev) => ({ ...prev, password: undefined }))
@@ -132,9 +126,7 @@ const SignIn = () => {
                     : "border-slate-200 bg-slate-50 focus:border-blue-300"
                 }`}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
+              <button type="button" onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
               >
                 {showPassword ? (
@@ -156,26 +148,19 @@ const SignIn = () => {
 
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 text-sm text-slate-600">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
+              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               />
               Ghi nhớ đăng nhập
             </label>
-            <Link
-              to="/forgot-password"
-              className="text-sm font-medium text-blue-600 hover:text-blue-800"
-            >
+            <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-800">
               Quên mật khẩu?
             </Link>
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
+          <button type="submit" disabled={isSubmitting} className="flex w-full items-center justify-center gap-2
+            rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer
+            disabled:cursor-not-allowed disabled:opacity-70"
           >
             <LogIn className="h-5 w-5" />
             Đăng nhập

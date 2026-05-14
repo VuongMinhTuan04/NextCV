@@ -15,7 +15,9 @@ const NotificationsPanel = ({
 }: Props) => {
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-      <section className="rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 px-6 py-5 text-white shadow-[0_20px_50px_rgba(15,23,42,0.35)]">
+      <section className="rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 px-6 py-5
+        text-white shadow-[0_20px_50px_rgba(15,23,42,0.35)]"
+      >
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20">
@@ -26,7 +28,9 @@ const NotificationsPanel = ({
             </h1>
           </div>
 
-          <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-sm font-medium backdrop-blur ring-1 ring-white/20">
+          <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-sm font-medium backdrop-blur
+            ring-1 ring-white/20"
+          >
             {unreadCount} chưa đọc
           </span>
         </div>
@@ -50,21 +54,16 @@ const NotificationsPanel = ({
             }`
 
             return (
-              <Link
-                key={n.id}
-                to={to}
-                onClick={() => markAsRead(n.id)}
-                className={`group relative block overflow-hidden rounded-3xl border bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md ${
+              <Link key={n.id} to={to} onClick={() => markAsRead(n.id)}
+                className={`group relative block overflow-hidden rounded-3xl border bg-white p-4 shadow-sm
+                  transition-all duration-300 hover:shadow-md ${
                   n.isRead
                     ? "opacity-70"
                     : "border-blue-100 bg-blue-50/40"
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <img
-                    src={n.actor.avatar}
-                    className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow-sm"
-                  />
+                  <img src={n.actor.avatar} className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow-sm" />
 
                   <div className="flex-1">
                     <div className="text-sm leading-relaxed text-slate-700">
@@ -102,7 +101,8 @@ const NotificationsPanel = ({
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-blue-500 shadow-md" />
                 )}
 
-                <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 transition group-hover:opacity-100 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 transition group-hover:opacity-100
+                  bg-gradient-to-r from-transparent via-white/20 to-transparent" />
               </Link>
             )
           })

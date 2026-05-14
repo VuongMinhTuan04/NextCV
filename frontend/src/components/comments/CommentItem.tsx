@@ -148,24 +148,20 @@ const CommentItem = ({
               </p>
             ) : (
               <div className="mt-2 space-y-3">
-                <AutoResizeTextarea
-                  value={draftContent}
-                  onChange={(e) => handleDraftChange(e.target.value)}
-                  className="min-h-[44px] w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:bg-white"
+                <AutoResizeTextarea value={draftContent} onChange={(e) => handleDraftChange(e.target.value)}
+                  className="min-h-[44px] w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm
+                  text-slate-700 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200
+                  focus:bg-white"
                 />
 
                 <div className="flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+                  <button type="button" onClick={() => setIsEditing(false)} className="flex items-center gap-1 rounded-full
+                    px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
                   >
                     Hủy
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={handleSave}
+                  <button type="button" onClick={handleSave}
                     disabled={
                       draftContent.trim().length === 0 ||
                       isUnchanged
@@ -187,9 +183,8 @@ const CommentItem = ({
           {isMine && (
             <DropdownMenu
               trigger={
-                <button
-                  type="button"
-                  className="rounded-full p-1 text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition"
+                <button type="button" className="rounded-full p-1 text-slate-500 hover:bg-slate-200
+                hover:text-slate-900 transition"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </button>
@@ -214,22 +209,15 @@ const CommentItem = ({
         {comment.attachment && (
           <div className="mt-2">
             {comment.attachment.kind === "image" ? (
-              <button
-                type="button"
-                onClick={() => onPreviewImage?.(comment.attachment!.url)}
-                className="block"
-              >
-                <img
-                  src={comment.attachment.url}
-                  alt={comment.attachment.name}
-                  className="max-w-[300px] max-h-96 w-auto h-auto cursor-pointer rounded-2xl border border-cyan-100 bg-cyan-50 object-cover transition hover:opacity-95"
+              <button type="button" onClick={() => onPreviewImage?.(comment.attachment!.url)} className="block">
+                <img src={comment.attachment.url} alt={comment.attachment.name} className="max-w-[300px] max-h-96 w-auto
+                  h-auto cursor-pointer rounded-2xl border border-cyan-100 bg-cyan-50 object-cover transition hover:opacity-95"
                 />
               </button>
             ) : comment.attachment.kind === "pdf" ? (
-              <button
-                type="button"
-                onClick={handleDownload}
-                className="mt-1 flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-left transition hover:bg-rose-100"
+              <button type="button" onClick={handleDownload} className="mt-1 flex w-full cursor-pointer items-center
+                justify-between gap-3 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-left transition
+                hover:bg-rose-100"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-rose-600">
@@ -247,10 +235,8 @@ const CommentItem = ({
                 <Download className="h-4 w-4 shrink-0 text-slate-400" />
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={handleDownload}
-                className="mt-1 flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-left transition hover:bg-sky-100"
+              <button type="button" onClick={handleDownload} className="mt-1 flex w-full cursor-pointer items-center
+                justify-between gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-left transition hover:bg-sky-100"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-sky-600">

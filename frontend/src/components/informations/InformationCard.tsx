@@ -38,22 +38,16 @@ const InformationCard = ({
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-1 items-start gap-4 sm:items-center sm:gap-5">
             <div className="shrink-0 flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={() => onPreviewImage(avatarSrc)}
-                className="shrink-0 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 p-1 shadow-sm cursor-pointer transition hover:opacity-80"
+              <button type="button" onClick={() => onPreviewImage(avatarSrc)} className="shrink-0 rounded-full bg-gradient-to-br
+                from-slate-100 to-slate-200 p-1 shadow-sm cursor-pointer transition hover:opacity-80"
               >
-                <Avatar
-                  src={avatarSrc}
-                  alt={information.fullName}
-                  size="lg"
-                  className="h-20 w-20 border-4 border-white text-xl shadow-lg sm:h-24 sm:w-24"
+                <Avatar src={avatarSrc} alt={information.fullName} size="lg" className="h-20 w-20 border-4 border-white text-xl
+                  shadow-lg sm:h-24 sm:w-24"
                 />
               </button>
               {canEditInformation && onLogout && (
-                <button
-                  onClick={onLogout}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                <button onClick={onLogout} className="flex cursor-pointer items-center gap-1.5 rounded-full bg-red-50 px-3
+                  py-1 text-xs font-medium text-red-600 transition hover:bg-red-100"
                 >
                   <LogOut className="h-3.5 w-3.5" />
                   Đăng xuất
@@ -89,10 +83,8 @@ const InformationCard = ({
           </div>
 
           {canEditInformation && (
-            <button
-              type="button"
-              onClick={onEditInformation}
-              className="inline-flex cursor-pointer h-11 w-full items-center justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 sm:w-auto"
+            <button type="button" onClick={onEditInformation} className="inline-flex cursor-pointer h-11 w-full items-center
+              justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 sm:w-auto"
             >
               <PencilLine className="h-4 w-4" />
               <span>Chỉnh sửa thông tin</span>

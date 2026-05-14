@@ -33,8 +33,7 @@ const HeaderRight = ({ mobileSearchOpen }: Props) => {
     >
       {user ? (
         <>
-          <NavLink
-            to="/notification"
+          <NavLink to="/notification"
             className="relative rounded-full p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
           >
             <Bell className="h-5 w-5" />
@@ -46,22 +45,14 @@ const HeaderRight = ({ mobileSearchOpen }: Props) => {
             )}
           </NavLink>
 
-          <NavLink
-            to={`/information/${user.id}`}
+          <NavLink to={`/information/${user.id}`}
             className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-200"
           >
-            <img
-              src={resolveAvatarSource(user.avatar)}
-              alt={user.fullName}
-              className="h-full w-full object-cover"
-            />
+            <img src={resolveAvatarSource(user.avatar)} alt={user.fullName} className="h-full w-full object-cover" />
           </NavLink>
         </>
       ) : (
-        <NavLink
-          to="/sign-in"
-          className="text-sm font-medium text-blue-600 transition hover:text-blue-800"
-        >
+        <NavLink to="/sign-in" className="text-sm font-medium text-blue-600 transition hover:text-blue-800">
           <span className="inline-flex items-center gap-2">
             <LogIn className="h-4 w-4" />
             Đăng nhập
